@@ -41,6 +41,7 @@ import (
 	"github.com/woodpecker-ci/woodpecker/server/forge/gitea"
 	"github.com/woodpecker-ci/woodpecker/server/forge/github"
 	"github.com/woodpecker-ci/woodpecker/server/forge/gitlab"
+	"github.com/woodpecker-ci/woodpecker/server/forge/radicle"
 	"github.com/woodpecker-ci/woodpecker/server/model"
 	"github.com/woodpecker-ci/woodpecker/server/plugins/environments"
 	"github.com/woodpecker-ci/woodpecker/server/plugins/registry"
@@ -143,6 +144,8 @@ func setupForge(c *cli.Context) (forge.Forge, error) {
 		return setupBitbucket(c)
 	case c.Bool("gitea"):
 		return setupGitea(c)
+	case c.Bool("radicle"):
+		return setupRadicle(c)
 	default:
 		return nil, fmt.Errorf("version control system not configured")
 	}
@@ -198,6 +201,19 @@ func setupGitHub(c *cli.Context) (forge.Forge, error) {
 	}
 	log.Trace().Msgf("Forge (github) opts: %#v", opts)
 	return github.New(opts)
+}
+
+// setupRadicle helper function to setup the Radicle forge from the CLI arguments.
+func setupRadicle(c *cli.Context) (forge.Forge, error) {
+	opts := radicle.Opts{
+		URL:         c.String("radicle-node"),
+		SecretToken: c.String("radicle-secret-token"),
+	}
+	if len(opts.URL) == 0 {
+		log.Fatal().Msg("WOODPECKER_RADICLE_URL must be set")
+	}
+	log.Trace().Msgf("Forge (Radicle) opts: %#v", opts)
+	return radicle.New(opts)
 }
 
 func setupMetrics(g *errgroup.Group, _store store.Store) {

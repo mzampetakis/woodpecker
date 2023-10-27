@@ -433,6 +433,26 @@ var flags = append([]cli.Flag{
 		Usage:   "gitlab skip ssl verification",
 	},
 	//
+	// Radicle
+	//
+	&cli.BoolFlag{
+		EnvVars: []string{"WOODPECKER_RADICLE"},
+		Name:    "radicle",
+		Usage:   "radicle driver is enabled",
+	},
+	&cli.StringFlag{
+		EnvVars: []string{"WOODPECKER_RADICLE_URL"},
+		Name:    "radicle-node",
+		Usage:   "radicle node address",
+		Value:   "https://radicle.xyz",
+	},
+	&cli.StringFlag{
+		EnvVars:  []string{"WOODPECKER_RADICLE_SECRET_TOKEN"},
+		Name:     "radicle-secret-token",
+		Usage:    "radicle node secret token",
+		FilePath: os.Getenv("WOODPECKER_RADICLE_SECRET_TOKEN_FILE"),
+	},
+	//
 	// development flags
 	//
 	&cli.StringFlag{

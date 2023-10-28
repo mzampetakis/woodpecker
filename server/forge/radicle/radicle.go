@@ -36,8 +36,7 @@ func (rad radicle) Name() string {
 
 // URL returns the root url of a configured forge
 func (rad radicle) URL() string {
-	//TODO implement me
-	panic("implement me")
+	return rad.url
 }
 
 // Login authenticates the session and returns the

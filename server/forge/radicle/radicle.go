@@ -31,8 +31,7 @@ func New(opts Opts) (forge.Forge, error) {
 
 // Name returns the string name of this driver
 func (rad radicle) Name() string {
-	//TODO implement me
-	panic("implement me")
+	return "radicle"
 }
 
 // URL returns the root url of a configured forge

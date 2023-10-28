@@ -6,6 +6,7 @@ import (
 	forge_types "github.com/woodpecker-ci/woodpecker/server/forge/types"
 	"github.com/woodpecker-ci/woodpecker/server/model"
 	"net/http"
+	"strings"
 )
 
 // Opts defines configuration options.
@@ -23,10 +24,12 @@ type radicle struct {
 // New returns a new forge Configuration for integrating with the Radicle
 // repository hosting service at https://radicle.xyz
 func New(opts Opts) (forge.Forge, error) {
-	return &radicle{
+	rad := radicle{
 		url:         opts.URL,
 		secretToken: opts.SecretToken,
-	}, nil
+	}
+	rad.url = strings.TrimSuffix(opts.URL, "/")
+	return &rad, nil
 }
 
 // Name returns the string name of this driver

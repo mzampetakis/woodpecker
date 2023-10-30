@@ -2,11 +2,13 @@ package radicle
 
 import (
 	"context"
+	"fmt"
 	"github.com/woodpecker-ci/woodpecker/server/forge"
 	"github.com/woodpecker-ci/woodpecker/server/forge/radicle/internal"
 	forge_types "github.com/woodpecker-ci/woodpecker/server/forge/types"
 	"github.com/woodpecker-ci/woodpecker/server/model"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -30,6 +32,16 @@ func New(opts Opts) (forge.Forge, error) {
 		secretToken: opts.SecretToken,
 	}
 	rad.url = strings.TrimSuffix(opts.URL, "/")
+	if len(rad.url) == 0 {
+		return nil, fmt.Errorf("must provide a URL")
+	}
+	_, err := url.Parse(rad.url)
+	if err != nil {
+		return nil, fmt.Errorf("must provide a valid URL: %s", err)
+	}
+	if len(rad.secretToken) == 0 {
+		return nil, fmt.Errorf("must provide a token")
+	}
 	return &rad, nil
 }
 

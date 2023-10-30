@@ -1,12 +1,12 @@
 package internal
 
 type NodeInfo struct {
-	Version string `json:"version"`
-	Node    Node   `json:"node"`
+	ID     string     `json:"id"`
+	Config NodeConfig `json:"config"`
 }
 
-type Node struct {
-	ID string `json:"id"`
+type NodeConfig struct {
+	Alias string `json:"alias"`
 }
 
 type Error struct {

@@ -21,7 +21,7 @@ const (
 const (
 	apiPath      = "/api"
 	apiV1Path    = "/v1"
-	pathNodeInfo = "%s"
+	pathNodeInfo = "%s/node"
 )
 
 type Client struct {

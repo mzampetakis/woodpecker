@@ -21,6 +21,8 @@ type Opts struct {
 // radicle implements "Forge" interface
 type radicle struct {
 	url         string
+	nodeID      string
+	alias       string
 	secretToken string
 }
 
@@ -63,6 +65,8 @@ func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Re
 	if err != nil {
 		return nil, err
 	}
+	rad.alias = nodeInfo.Config.Alias
+	rad.nodeID = nodeInfo.ID
 	return convertUser(nodeInfo), nil
 }
 
@@ -87,8 +91,16 @@ func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.Forg
 
 // Repos fetches a list of repos from the forge.
 func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, error) {
-	//TODO implement me
-	panic("implement me")
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	projects, err := client.GetProjects()
+	if err != nil {
+		return nil, err
+	}
+	repos := []*model.Repo{}
+	for _, project := range projects {
+		repos = append(repos, convertProject(project, rad))
+	}
+	return repos, nil
 }
 
 // File fetches a file from the forge repository and returns it in string

@@ -3,6 +3,7 @@ package radicle
 import (
 	"context"
 	"github.com/woodpecker-ci/woodpecker/server/forge"
+	"github.com/woodpecker-ci/woodpecker/server/forge/radicle/internal"
 	forge_types "github.com/woodpecker-ci/woodpecker/server/forge/types"
 	"github.com/woodpecker-ci/woodpecker/server/model"
 	"net/http"
@@ -45,8 +46,12 @@ func (rad *radicle) URL() string {
 // Login authenticates the session and returns the
 // forge user details.
 func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
-	//TODO implement me
-	panic("implement me")
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	nodeInfo, err := client.GetNodeInfo()
+	if err != nil {
+		return nil, err
+	}
+	return convertUser(nodeInfo), nil
 }
 
 // Auth authenticates the session and returns the forge user

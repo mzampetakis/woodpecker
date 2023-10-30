@@ -21,7 +21,8 @@ const (
 const (
 	apiPath      = "/api"
 	apiV1Path    = "/v1"
-	pathNodeInfo = "%s/node"
+	pathNode     = "%s/node"
+	pathProjects = "%s/projects"
 )
 
 type Client struct {
@@ -40,10 +41,18 @@ func NewClient(ctx context.Context, url string, secretToken string) *Client {
 
 func (c *Client) GetNodeInfo() (*NodeInfo, error) {
 	out := new(NodeInfo)
-	uri := fmt.Sprintf(pathNodeInfo, c.base+apiPath+apiV1Path)
+	uri := fmt.Sprintf(pathNode, c.base+apiPath+apiV1Path)
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
+}
+
+func (c *Client) GetProjects() ([]*Project, error) {
+	out := new([]*Project)
+	uri := fmt.Sprintf(pathProjects, c.base+apiPath+apiV1Path)
+	fmt.Println(uri)
+	_, err := c.do(uri, get, nil, out)
+	return *out, err
 }
 
 func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error) {

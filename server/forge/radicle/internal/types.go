@@ -15,11 +15,12 @@ type NodeConfig struct {
 }
 
 type Project struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Description   string `json:"description"`
-	DefaultBranch string `json:"defaultBranch"`
-	Head          string `json:"head"`
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Description   string   `json:"description"`
+	Delegates     []string `json:"delegates"`
+	DefaultBranch string   `json:"defaultBranch"`
+	Head          string   `json:"head"`
 }
 
 type Error struct {

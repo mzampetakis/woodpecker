@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/woodpecker-ci/woodpecker/server/forge/radicle/internal"
 	"github.com/woodpecker-ci/woodpecker/server/model"
+	"strings"
 )
 
 // convertUser is a helper function used to convert a Radicle Node Info structure
@@ -23,14 +24,16 @@ func convertProject(project *internal.Project, rad *radicle) *model.Repo {
 		Push:  true,
 		Admin: true,
 	}
+	projectID := strings.TrimPrefix(project.ID, "rad:")
 	return &model.Repo{
-		ForgeRemoteID: model.ForgeRemoteID(project.ID),
-		Name:          project.Name,
-		FullName:      fmt.Sprintf("%s/%s", rad.alias, project.Name),
-		Link:          project.ID,
-		Clone:         fmt.Sprintf("%s/%s", rad.URL(), project.ID),
+		ForgeRemoteID: model.ForgeRemoteID(projectID),
+		Name:          projectID,
+		FullName:      fmt.Sprintf("%s/%s", rad.Alias(), project.Name),
+		Link:          fmt.Sprintf("%s/%s", rad.URL(), projectID),
+		Clone:         fmt.Sprintf("%s/%s %s", rad.URL(), projectID, project.Name),
 		CloneSSH:      "",
 		Branch:        project.DefaultBranch,
 		Perm:          &perm,
+		Owner:         rad.nodeID,
 	}
 }

@@ -57,6 +57,10 @@ func (rad *radicle) URL() string {
 	return rad.url
 }
 
+func (rad *radicle) Alias() string {
+	return rad.alias
+}
+
 // Login authenticates the session and returns the
 // forge user details.
 func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
@@ -86,12 +90,24 @@ func (rad *radicle) Teams(ctx context.Context, u *model.User) ([]*model.Team, er
 
 // Repo fetches the repository from the forge, preferred is using the ID, fallback is owner/name.
 func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.ForgeRemoteID, owner, name string) (*model.Repo, error) {
-	//TODO implement me
-	panic("implement me")
+	fmt.Println(fmt.Sprintf("%+v", *u))
+	fmt.Println("remoteID: " + string(remoteID))
+	fmt.Println("owner: " + owner)
+	fmt.Println("name: " + name)
+	if remoteID.IsValid() {
+		name = string(remoteID)
+	}
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	project, err := client.GetProject(name)
+	if err != nil {
+		return nil, err
+	}
+	return convertProject(project, rad), nil
 }
 
 // Repos fetches a list of repos from the forge.
 func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, error) {
+	fmt.Println(fmt.Sprintf("%+v", *u))
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
 	projects, err := client.GetProjects()
 	if err != nil {

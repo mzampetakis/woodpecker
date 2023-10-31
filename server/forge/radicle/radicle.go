@@ -61,6 +61,7 @@ func (rad *radicle) URL() string {
 // forge user details.
 func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	//TODO use token to verify validity
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
 		return nil, err

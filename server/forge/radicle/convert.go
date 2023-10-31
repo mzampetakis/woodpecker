@@ -10,9 +10,8 @@ import (
 // to the Woodpecker User structure.
 func convertUser(nodeInfo *internal.NodeInfo) *model.User {
 	return &model.User{
-		Login:         nodeInfo.Config.Alias,
-		Avatar:        "",
 		ForgeRemoteID: model.ForgeRemoteID(nodeInfo.ID),
+		Login:         nodeInfo.Config.Alias,
 	}
 }
 
@@ -27,7 +26,7 @@ func convertProject(project *internal.Project, rad *radicle) *model.Repo {
 	return &model.Repo{
 		ForgeRemoteID: model.ForgeRemoteID(project.ID),
 		Name:          project.Name,
-		FullName:      fmt.Sprintf("%s/%s", rad.nodeID, project.Name),
+		FullName:      fmt.Sprintf("%s/%s", rad.alias, project.Name),
 		Link:          project.ID,
 		Clone:         fmt.Sprintf("%s/%s", rad.URL(), project.ID),
 		CloneSSH:      "",

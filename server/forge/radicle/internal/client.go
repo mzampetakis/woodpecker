@@ -22,6 +22,7 @@ const (
 	apiPath      = "/api"
 	apiV1Path    = "/v1"
 	pathNode     = "%s/node"
+	pathProject  = "%s/projects/%s"
 	pathProjects = "%s/projects"
 )
 
@@ -42,6 +43,14 @@ func NewClient(ctx context.Context, url string, secretToken string) *Client {
 func (c *Client) GetNodeInfo() (*NodeInfo, error) {
 	out := new(NodeInfo)
 	uri := fmt.Sprintf(pathNode, c.base+apiPath+apiV1Path)
+	fmt.Println(uri)
+	_, err := c.do(uri, get, nil, out)
+	return out, err
+}
+
+func (c *Client) GetProject(projectID string) (*Project, error) {
+	out := new(Project)
+	uri := fmt.Sprintf(pathProject, c.base+apiPath+apiV1Path, projectID)
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err

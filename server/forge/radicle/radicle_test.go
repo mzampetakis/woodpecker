@@ -14,7 +14,7 @@ func Test_bitbucket(t *testing.T) {
 	g.Describe("Radicle client", func() {
 
 		g.Describe("Creating new Forge", func() {
-			g.It("Should return an error when missing URL", func() {
+			g.It("should return an error when missing URL", func() {
 				opts := Opts{
 					URL:         "",
 					SecretToken: "a_secret_token",

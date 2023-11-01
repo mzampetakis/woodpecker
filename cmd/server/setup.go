@@ -207,6 +207,7 @@ func setupGitHub(c *cli.Context) (forge.Forge, error) {
 func setupRadicle(c *cli.Context) (forge.Forge, error) {
 	opts := radicle.Opts{
 		URL:         c.String("radicle-node"),
+		NodeID:      c.String("radicle-nid"),
 		SecretToken: c.String("radicle-secret-token"),
 	}
 	if len(opts.URL) == 0 {

@@ -18,7 +18,7 @@ func convertUser(nodeInfo *internal.NodeInfo) *model.User {
 
 // convertProject is a helper function used to convert a Radicle Project structure
 // to the Woodpecker Repo structure.
-func convertProject(project *internal.Project, rad *radicle) *model.Repo {
+func convertProject(project *internal.Project, user *model.User, rad *radicle) *model.Repo {
 	perm := model.Perm{
 		Pull:  true,
 		Push:  true,
@@ -27,13 +27,13 @@ func convertProject(project *internal.Project, rad *radicle) *model.Repo {
 	projectID := strings.TrimPrefix(project.ID, "rad:")
 	return &model.Repo{
 		ForgeRemoteID: model.ForgeRemoteID(projectID),
-		Name:          projectID,
-		FullName:      fmt.Sprintf("%s/%s", rad.Alias(), project.Name),
+		Name:          project.Name,
+		FullName:      fmt.Sprintf("%s/%s", user.Login, project.Name),
 		Link:          fmt.Sprintf("%s/%s", rad.URL(), projectID),
-		Clone:         fmt.Sprintf("%s/%s %s", rad.URL(), projectID, project.Name),
+		Clone:         fmt.Sprintf("%s/%s.git %s", rad.URL(), projectID, project.Name),
 		CloneSSH:      "",
 		Branch:        project.DefaultBranch,
 		Perm:          &perm,
-		Owner:         rad.nodeID,
+		Owner:         user.Login,
 	}
 }

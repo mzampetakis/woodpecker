@@ -444,7 +444,12 @@ var flags = append([]cli.Flag{
 		EnvVars: []string{"WOODPECKER_RADICLE_URL"},
 		Name:    "radicle-node",
 		Usage:   "radicle node address",
-		Value:   "https://radicle.xyz",
+		Value:   "127.0.0.1:8080",
+	},
+	&cli.StringFlag{
+		EnvVars: []string{"WOODPECKER_RADICLE_NID"},
+		Name:    "radicle-nid",
+		Usage:   "radicle node ID",
 	},
 	&cli.StringFlag{
 		EnvVars:  []string{"WOODPECKER_RADICLE_SECRET_TOKEN"},

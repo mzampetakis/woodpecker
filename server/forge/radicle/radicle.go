@@ -72,7 +72,7 @@ func (rad *radicle) NID() string {
 func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	fmt.Println("Called Login")
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
-	//TODO use token to verify validity
+	//TODO use secret token to verify validity
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
 		return nil, err
@@ -84,6 +84,7 @@ func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Re
 // login for the given token and secret
 func (rad *radicle) Auth(ctx context.Context, token, secret string) (string, error) {
 	fmt.Println("Called Auth")
+	// Auth is not used by Radicle as no there is no oAuth process
 	//TODO implement me
 	panic("implement me")
 }
@@ -182,6 +183,7 @@ func (rad *radicle) Deactivate(ctx context.Context, u *model.User, r *model.Repo
 
 // Branches returns the names of all branches for the named repository.
 func (rad *radicle) Branches(ctx context.Context, u *model.User, r *model.Repo, p *model.ListOptions) ([]string, error) {
+	// Radicle announces only defaultBranch, so no other branch is globally accessible
 	fmt.Println("Called Branches")
 	if p.Page > 1 {
 		return []string{}, nil

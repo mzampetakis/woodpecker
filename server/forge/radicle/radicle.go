@@ -2,6 +2,7 @@ package radicle
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/woodpecker-ci/woodpecker/server/forge"
@@ -196,10 +197,22 @@ func (rad *radicle) Branches(ctx context.Context, u *model.User, r *model.Repo, 
 }
 
 // BranchHead returns the sha of the head (latest commit) of the specified branch
-func (rad *radicle) BranchHead(ctx context.Context, u *model.User, r *model.Repo, branch string) (string, error) {
+func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo, branch string) (string, error) {
 	fmt.Println("Called BranchHead")
-	//TODO implement me
-	panic("implement me")
+	if r.Branch != branch {
+		return "", errors.New("branch does not exist")
+	}
+	listOpts := internal.ListOpts{Page: 0, PerPage: 1}
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	branchCommits, err := client.GetProjectCommits(string(r.ForgeRemoteID), listOpts)
+	if err != nil {
+		return "", err
+	}
+	if branchCommits.Stats.Commits == 0 || len(branchCommits.Commits) == 0 &&
+		len(branchCommits.Commits[0].Commit.Parents[0]) > 0 {
+		return "", errors.New("branch has no commits")
+	}
+	return branchCommits.Commits[0].Commit.Parents[0], err
 }
 
 // PullRequests returns all pull requests for the named repository.

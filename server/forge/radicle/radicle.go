@@ -92,8 +92,8 @@ func (rad *radicle) Auth(ctx context.Context, token, secret string) (string, err
 // Teams fetches a list of team memberships from the forge.
 func (rad *radicle) Teams(ctx context.Context, u *model.User) ([]*model.Team, error) {
 	fmt.Println("Called Teams")
-	//TODO implement me
-	panic("implement me")
+	//Readicle does not support teams, workspaces or organizations.
+	return nil, nil
 }
 
 // Repo fetches the repository from the forge, preferred is using the ID, fallback is owner/name.
@@ -160,8 +160,12 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 // private repositories from a forge.
 func (rad *radicle) Netrc(u *model.User, r *model.Repo) (*model.Netrc, error) {
 	fmt.Println("Called Netrc")
-	//TODO implement me
-	panic("implement me")
+	//Radicle does not currently support private repos, so there is no need to implement this.
+	return &model.Netrc{
+		Machine:  rad.URL(),
+		Login:    "",
+		Password: "",
+	}, nil
 }
 
 // Activate activates a repository by creating the post-commit hook.
@@ -215,18 +219,25 @@ func (rad *radicle) Hook(ctx context.Context, r *http.Request) (repo *model.Repo
 
 // OrgMembership returns if user is member of organization and if user
 // is admin/owner in that organization.
-func (rad *radicle) OrgMembership(ctx context.Context, u *model.User, org string) (*model.OrgPerm, error) {
+func (rad *radicle) OrgMembership(_ context.Context, u *model.User, orgName string) (*model.OrgPerm, error) {
 	fmt.Println("Called OrgMembership")
-	//TODO implement me
-	panic("implement me")
+	// Radicle does not currently support Orgs, so return membership as org Admin if its user's Org.
+	if orgName != u.Login {
+		return &model.OrgPerm{
+			Member: false,
+			Admin:  false,
+		}, nil
+	}
+	return &model.OrgPerm{
+		Member: true,
+		Admin:  true,
+	}, nil
 }
 
 // Org fetches the organization from the forge by name. If the name is a user an org with type user is returned.
 func (rad *radicle) Org(ctx context.Context, u *model.User, org string) (*model.Org, error) {
 	fmt.Println("Called Org")
-	fmt.Println(org)
-	fmt.Println(fmt.Sprintf("%+v", *u))
-
+	// Radicle does not currently support Orgs, so return user as individual org.
 	return &model.Org{
 		Name:   u.Login,
 		IsUser: true,

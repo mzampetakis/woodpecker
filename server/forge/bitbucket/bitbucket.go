@@ -18,6 +18,7 @@ package bitbucket
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"net/url"
 	"path/filepath"
@@ -285,6 +286,7 @@ func (c *config) Status(ctx context.Context, user *model.User, repo *model.Repo,
 		Key:   "Woodpecker",
 		URL:   common.GetPipelineStatusLink(repo, pipeline, nil),
 	}
+	log.Debug().Msgf("Bitbucket status: %s ", fmt.Sprintf("%+v", status))
 	return c.newClient(ctx, user).CreateStatus(repo.Owner, repo.Name, pipeline.Commit, &status)
 }
 

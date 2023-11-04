@@ -140,18 +140,35 @@ func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *m
 	fmt.Println("Called File")
 	fmt.Println(f)
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
-	fileContents, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
+	projectFile, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
 		return nil, err
 	}
-	return fileContents, err
+	return convertProjectFileToContent(&projectFile)
 }
 
 // Dir fetches a folder from the forge repository
-func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, f string) ([]*forge_types.FileMeta, error) {
+func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline,
+	f string) ([]*forge_types.FileMeta, error) {
 	fmt.Println("Called Dir")
-	//TODO implement me
-	panic("implement me")
+	fmt.Println(f)
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	fileContents, err := client.GetProjectCommitDir(string(r.ForgeRemoteID), b.Commit, f)
+	if err != nil {
+		return nil, err
+	}
+	filesMeta := []*forge_types.FileMeta{}
+	for _, fileContentEntry := range fileContents.Entries {
+		fileContent := []byte{}
+		if fileContentEntry.Kind == internal.FileTypeBlob {
+			fileContent, err = rad.File(ctx, u, r, b, fileContentEntry.Path)
+			if err != nil {
+				return nil, err
+			}
+		}
+		filesMeta = append(filesMeta, convertFileContent(fileContentEntry, fileContent))
+	}
+	return filesMeta, err
 }
 
 // Status sends the commit status to the forge.
@@ -213,11 +230,10 @@ func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo
 	if err != nil {
 		return "", err
 	}
-	if branchCommits.Stats.Commits == 0 || len(branchCommits.Commits) == 0 &&
-		len(branchCommits.Commits[0].Commit.Parents[0]) > 0 {
+	if branchCommits.Stats.Commits == 0 || len(branchCommits.Commits) == 0 {
 		return "", errors.New("branch has no commits")
 	}
-	return branchCommits.Commits[0].Commit.Parents[0], err
+	return branchCommits.Commits[0].Commit.ID, err
 }
 
 // PullRequests returns all pull requests for the named repository.

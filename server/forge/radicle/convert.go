@@ -3,6 +3,7 @@ package radicle
 import (
 	"fmt"
 	"github.com/woodpecker-ci/woodpecker/server/forge/radicle/internal"
+	forge_types "github.com/woodpecker-ci/woodpecker/server/forge/types"
 	"github.com/woodpecker-ci/woodpecker/server/model"
 	"strings"
 )
@@ -35,5 +36,20 @@ func convertProject(project *internal.Project, user *model.User, rad *radicle) *
 		Branch:        project.DefaultBranch,
 		Perm:          &perm,
 		Owner:         user.Login,
+	}
+}
+
+// convertProjectFileToContent is a helper function used to convert a Radicle Project File content
+// to the Woodpecker file content structure.
+func convertProjectFileToContent(projectFile *internal.ProjectFile) ([]byte, error) {
+	return projectFile.Content, nil
+}
+
+// convertFileContent is a helper function used to convert a Radicle Project file Contents
+// to the Woodpecker File Meta structure.
+func convertFileContent(fileContentEntries internal.FileTreeEntries, fileContent []byte) *forge_types.FileMeta {
+	return &forge_types.FileMeta{
+		Name: fileContentEntries.Path, // Might need .Name
+		Data: fileContent,
 	}
 }

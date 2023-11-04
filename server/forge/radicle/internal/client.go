@@ -19,6 +19,11 @@ const (
 )
 
 const (
+	FileTypeBlob      = "blob"
+	FileTypeDirectory = "tree"
+)
+
+const (
 	apiPath               = "/api"
 	apiV1Path             = "/v1"
 	pathNode              = "%s/node"
@@ -26,6 +31,7 @@ const (
 	pathProjects          = "%s/projects"
 	pathProjectCommits    = "%s/projects/%s/commits?%s"
 	pathProjectCommitFile = "%s/projects/%s/blob/%s/%s"
+	pathProjectCommitDir  = "%s/projects/%s/tree/%s/%s"
 )
 
 type Client struct {
@@ -74,9 +80,20 @@ func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*Commit
 	return out, err
 }
 
-func (c *Client) GetProjectCommitFile(projectID, commit, file string) ([]byte, error) {
-	out := new([]byte)
+func (c *Client) GetProjectCommitFile(projectID, commit, file string) (ProjectFile, error) {
+	out := new(ProjectFile)
 	uri := fmt.Sprintf(pathProjectCommitFile, c.base+apiPath+apiV1Path, projectID, commit, file)
+	fmt.Println(uri)
+	_, err := c.do(uri, get, nil, out)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return *out, err
+}
+
+func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, error) {
+	out := new(FileTree)
+	uri := fmt.Sprintf(pathProjectCommitDir, c.base+apiPath+apiV1Path, projectID, commit, path)
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return *out, err

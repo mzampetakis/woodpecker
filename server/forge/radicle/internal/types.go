@@ -47,6 +47,23 @@ type Commit struct {
 	Parents []string `json:"parents"`
 }
 
+type ProjectFile struct {
+	Binary  bool   `json:"binary"`
+	Name    string `json:"name"`
+	Content []byte `json:"content"`
+	Path    string `json:"path"`
+}
+
+type FileTree struct {
+	Entries []FileTreeEntries `json:"entries"`
+}
+
+type FileTreeEntries struct {
+	Path string `json:"path"`
+	Name string `json:"name"`
+	Kind string `json:"kind"`
+}
+
 func (o *ListOpts) Encode() string {
 	params := url.Values{}
 	if o.Page != 0 {

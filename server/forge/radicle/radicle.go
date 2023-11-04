@@ -138,8 +138,13 @@ func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, er
 // format.
 func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, f string) ([]byte, error) {
 	fmt.Println("Called File")
-	//TODO implement me
-	panic("implement me")
+	fmt.Println(f)
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	fileContents, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
+	if err != nil {
+		return nil, err
+	}
+	return fileContents, err
 }
 
 // Dir fetches a folder from the forge repository

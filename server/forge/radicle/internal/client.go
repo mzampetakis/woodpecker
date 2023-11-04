@@ -19,12 +19,13 @@ const (
 )
 
 const (
-	apiPath            = "/api"
-	apiV1Path          = "/v1"
-	pathNode           = "%s/node"
-	pathProject        = "%s/projects/%s"
-	pathProjects       = "%s/projects"
-	pathProjectCommits = "%s/projects/%s/commits?%s"
+	apiPath               = "/api"
+	apiV1Path             = "/v1"
+	pathNode              = "%s/node"
+	pathProject           = "%s/projects/%s"
+	pathProjects          = "%s/projects"
+	pathProjectCommits    = "%s/projects/%s/commits?%s"
+	pathProjectCommitFile = "%s/projects/%s/blob/%s/%s"
 )
 
 type Client struct {
@@ -71,6 +72,14 @@ func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*Commit
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
+}
+
+func (c *Client) GetProjectCommitFile(projectID, commit, file string) ([]byte, error) {
+	out := new([]byte)
+	uri := fmt.Sprintf(pathProjectCommitFile, c.base+apiPath+apiV1Path, projectID, commit, file)
+	fmt.Println(uri)
+	_, err := c.do(uri, get, nil, out)
+	return *out, err
 }
 
 func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error) {

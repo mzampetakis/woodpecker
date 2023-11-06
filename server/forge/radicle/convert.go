@@ -53,3 +53,12 @@ func convertFileContent(fileContentEntries internal.FileTreeEntries, fileContent
 		Data: fileContent,
 	}
 }
+
+// convertProjectPatch is a helper function used to convert a Radicle patch
+// to the Woodpecker Pull Request structure.
+func convertProjectPatch(patch *internal.Patch) *model.PullRequest {
+	return &model.PullRequest{
+		//Index: patch.ID,
+		Title: patch.Title,
+	}
+}

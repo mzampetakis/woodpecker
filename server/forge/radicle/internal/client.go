@@ -99,6 +99,14 @@ func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, 
 	return *out, err
 }
 
+func (c *Client) GetProjectPatches(projectID string, listOpts ListOpts) ([]*Patch, error) {
+	out := new([]*Patch)
+	uri := fmt.Sprintf(pathProjectCommits, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
+	fmt.Println(uri)
+	_, err := c.do(uri, get, nil, out)
+	return *out, err
+}
+
 func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error) {
 	uri, err := url.Parse(rawurl)
 	if err != nil {

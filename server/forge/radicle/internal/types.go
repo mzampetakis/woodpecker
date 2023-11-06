@@ -64,6 +64,16 @@ type FileTreeEntries struct {
 	Kind string `json:"kind"`
 }
 
+type Patch struct {
+	ID    string     `json:"id"`
+	Title string     `json:"title"`
+	State PatchState `json:"state"`
+}
+
+type PatchState struct {
+	Status string `json:"status"`
+}
+
 func (o *ListOpts) Encode() string {
 	params := url.Values{}
 	if o.Page != 0 {

@@ -239,8 +239,18 @@ func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo
 // PullRequests returns all pull requests for the named repository.
 func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Repo, p *model.ListOptions) ([]*model.PullRequest, error) {
 	fmt.Println("Called PullRequests")
-	//TODO implement me
-	panic("implement me")
+	listOpts := internal.ListOpts{Page: p.Page, PerPage: p.PerPage}
+	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	projectPatches, err := client.GetProjectPatches(string(r.ForgeRemoteID), listOpts)
+	if err != nil {
+		return nil, err
+	}
+	pullRequests := []*model.PullRequest{}
+	for _, projectPatch := range projectPatches {
+		pullRequests = append(pullRequests, convertProjectPatch(projectPatch))
+
+	}
+	return pullRequests, err
 }
 
 // Hook parses the post-commit hook from the Request body and returns the

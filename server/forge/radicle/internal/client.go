@@ -27,6 +27,7 @@ const (
 	apiPath               = "/api"
 	apiV1Path             = "/v1"
 	pathNode              = "%s/node"
+	pathSession           = "%s/sessions/%s"
 	pathProject           = "%s/projects/%s"
 	pathProjects          = "%s/projects"
 	pathProjectCommits    = "%s/projects/%s/commits?%s"
@@ -36,8 +37,9 @@ const (
 
 type Client struct {
 	*http.Client
-	base string
-	ctx  context.Context
+	base  string
+	ctx   context.Context
+	token string
 }
 
 func NewClient(ctx context.Context, url string, secretToken string) *Client {
@@ -45,12 +47,21 @@ func NewClient(ctx context.Context, url string, secretToken string) *Client {
 		Client: http.DefaultClient,
 		base:   url,
 		ctx:    ctx,
+		token:  secretToken,
 	}
 }
 
 func (c *Client) GetNodeInfo() (*NodeInfo, error) {
 	out := new(NodeInfo)
 	uri := fmt.Sprintf(pathNode, c.base+apiPath+apiV1Path)
+	fmt.Println(uri)
+	_, err := c.do(uri, get, nil, out)
+	return out, err
+}
+
+func (c *Client) GetSessionInfo() (*SessionInfo, error) {
+	out := new(SessionInfo)
+	uri := fmt.Sprintf(pathSession, c.base+apiPath+apiV1Path, c.token)
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
@@ -132,6 +143,7 @@ func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error)
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	req.Header.Set("Authorization", "Bearer "+c.token)
 
 	resp, err := c.Do(req)
 	if err != nil {

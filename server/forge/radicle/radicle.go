@@ -73,7 +73,13 @@ func (rad *radicle) NID() string {
 func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	fmt.Println("Called Login")
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
-	//TODO use secret token to verify validity
+	sessionInfo, err := client.GetSessionInfo()
+	if err != nil {
+		return nil, err
+	}
+	if sessionInfo.Status != "authorized" {
+		return nil, errors.New("provided secret token is unauthorized")
+	}
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
 		return nil, err

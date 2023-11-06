@@ -15,6 +15,15 @@ type NodeInfo struct {
 	Config NodeConfig `json:"config"`
 }
 
+type SessionInfo struct {
+	SessionId string `json:"sessionId"`
+	Status    string `json:"status"`
+	PublicKey string `json:"publicKey"`
+	Alias     string `json:"alias"`
+	IssuedAt  int64  `json:"issuedAt"`
+	ExpiresAt int64  `json:"expiresAt"`
+}
+
 type NodeConfig struct {
 	Alias string `json:"alias"`
 }

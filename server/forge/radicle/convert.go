@@ -14,6 +14,7 @@ func convertUser(nodeInfo *internal.NodeInfo) *model.User {
 	return &model.User{
 		ForgeRemoteID: model.ForgeRemoteID(nodeInfo.ID),
 		Login:         nodeInfo.Config.Alias,
+		Avatar:        "", //TODO add a custom radicle logo
 	}
 }
 
@@ -31,7 +32,7 @@ func convertProject(project *internal.Project, user *model.User, rad *radicle) *
 		Name:          project.Name,
 		FullName:      fmt.Sprintf("%s/%s", user.Login, project.Name),
 		Link:          fmt.Sprintf("%s/%s", rad.URL(), projectID),
-		Clone:         fmt.Sprintf("%s/%s.git %s", rad.URL(), projectID, project.Name),
+		Clone:         fmt.Sprintf("%s/%s.git", rad.URL(), projectID),
 		CloneSSH:      "",
 		Branch:        project.DefaultBranch,
 		Perm:          &perm,
@@ -42,7 +43,7 @@ func convertProject(project *internal.Project, user *model.User, rad *radicle) *
 // convertProjectFileToContent is a helper function used to convert a Radicle Project File content
 // to the Woodpecker file content structure.
 func convertProjectFileToContent(projectFile *internal.ProjectFile) ([]byte, error) {
-	return projectFile.Content, nil
+	return []byte(projectFile.Content), nil
 }
 
 // convertFileContent is a helper function used to convert a Radicle Project file Contents

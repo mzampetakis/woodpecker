@@ -91,15 +91,16 @@ func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*Commit
 	return out, err
 }
 
-func (c *Client) GetProjectCommitFile(projectID, commit, file string) (ProjectFile, error) {
+func (c *Client) GetProjectCommitFile(projectID, commit, file string) (*ProjectFile, error) {
 	out := new(ProjectFile)
 	uri := fmt.Sprintf(pathProjectCommitFile, c.base+apiPath+apiV1Path, projectID, commit, file)
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	if err != nil {
 		fmt.Println(err)
+		return nil, err
 	}
-	return *out, err
+	return out, err
 }
 
 func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, error) {

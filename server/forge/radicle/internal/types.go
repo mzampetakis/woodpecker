@@ -59,7 +59,7 @@ type Commit struct {
 type ProjectFile struct {
 	Binary  bool   `json:"binary"`
 	Name    string `json:"name"`
-	Content []byte `json:"content"`
+	Content string `json:"content"`
 	Path    string `json:"path"`
 }
 

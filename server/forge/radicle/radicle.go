@@ -148,9 +148,10 @@ func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *m
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
 	projectFile, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
+		fmt.Println(err)
 		return nil, err
 	}
-	return convertProjectFileToContent(&projectFile)
+	return convertProjectFileToContent(projectFile)
 }
 
 // Dir fetches a folder from the forge repository
@@ -181,8 +182,8 @@ func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *mo
 // An example would be the GitHub pull request status.
 func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, p *model.Workflow) error {
 	fmt.Println("Called Status")
-	//TODO implement me
-	panic("implement me")
+	//TODO implement me - left with no error for testing purposes
+	return nil
 }
 
 // Netrc returns a .netrc file that can be used to clone

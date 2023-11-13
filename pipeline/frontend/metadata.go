@@ -21,9 +21,9 @@ import (
 
 	"github.com/drone/envsubst"
 
-	"github.com/woodpecker-ci/woodpecker/pipeline/frontend/metadata"
-	"github.com/woodpecker-ci/woodpecker/server/model"
-	"github.com/woodpecker-ci/woodpecker/version"
+	"go.woodpecker-ci.org/woodpecker/pipeline/frontend/metadata"
+	"go.woodpecker-ci.org/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/version"
 )
 
 func EnvVarSubst(yaml string, environ map[string]string) (string, error) {
@@ -55,6 +55,7 @@ func MetadataFromStruct(forge metadata.ServerForge, repo *model.Repo, pipeline, 
 	fRepo := metadata.Repo{}
 	if repo != nil {
 		fRepo = metadata.Repo{
+			ID:          repo.ID,
 			Name:        repo.Name,
 			Owner:       repo.Owner,
 			RemoteID:    fmt.Sprint(repo.ForgeRemoteID),

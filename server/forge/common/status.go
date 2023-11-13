@@ -21,8 +21,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/woodpecker-ci/woodpecker/server"
-	"github.com/woodpecker-ci/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/server"
+	"go.woodpecker-ci.org/woodpecker/server/model"
 )
 
 func GetPipelineStatusContext(repo *model.Repo, pipeline *model.Pipeline, workflow *model.Workflow) string {
@@ -38,7 +38,7 @@ func GetPipelineStatusContext(repo *model.Repo, pipeline *model.Pipeline, workfl
 		return ""
 	}
 	var ctx bytes.Buffer
-	err = tmpl.Execute(&ctx, map[string]interface{}{
+	err = tmpl.Execute(&ctx, map[string]any{
 		"context":  server.Config.Server.StatusContext,
 		"event":    event,
 		"workflow": workflow.Name,

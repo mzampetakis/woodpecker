@@ -182,7 +182,10 @@ func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *mo
 // An example would be the GitHub pull request status.
 func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, p *model.Workflow) error {
 	fmt.Println("Called Status")
+	fmt.Println(b.Status)
+	fmt.Println(fmt.Sprintf("%+v", b))
 	//TODO implement me - left with no error for testing purposes
+	//will have to add a comment to commit (CI COB) when this is ready
 	return nil
 }
 
@@ -191,9 +194,10 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 func (rad *radicle) Netrc(u *model.User, r *model.Repo) (*model.Netrc, error) {
 	fmt.Println("Called Netrc")
 	//Radicle does not currently support private repos, so there is no need to implement this.
+	// Return a dummy Netrc model.
 	return &model.Netrc{
 		Machine:  rad.URL(),
-		Login:    "",
+		Login:    rad.NID(),
 		Password: "",
 	}, nil
 }

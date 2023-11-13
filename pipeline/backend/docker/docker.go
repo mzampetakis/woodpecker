@@ -16,6 +16,7 @@ package docker
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -246,6 +247,7 @@ func (e *docker) StartStep(ctx context.Context, step *backend.Step, taskUUID str
 		if e.network != "" {
 			err = e.client.NetworkConnect(ctx, e.network, containerName, &network.EndpointSettings{})
 			if err != nil {
+				fmt.Println(err)
 				return err
 			}
 		}

@@ -8,13 +8,17 @@ import (
 	"strings"
 )
 
+// As radicle does not support user avatars, use radicle's logo as user avatar
+const RADICLE_IMAGE = "data:image/png;base64," +
+	"iVBORw0KGgoAAAANSUhEUgAAACwAAAAsBAMAAADsqkcyAAAAElBMVEUAAAAzM91VVf/09PT/Vf////+iehdrAAAAAXRSTlMAQObYZgAAAAFiS0dEBfhv6ccAAABTSURBVCjPY2AAAiUlBjhAYlNFGMFBEaSasKAgBFNbWAkFUFMYxDQGAgRNbWEXFwRNLWFBrIA6wgxg8yGRC8JQoSEhDEuUaGmKSsKQZIOSpigXBgAOHTr5ND3M6gAAAABJRU5ErkJggg=="
+
 // convertUser is a helper function used to convert a Radicle Node Info structure
 // to the Woodpecker User structure.
 func convertUser(nodeInfo *internal.NodeInfo) *model.User {
 	return &model.User{
 		ForgeRemoteID: model.ForgeRemoteID(nodeInfo.ID),
 		Login:         nodeInfo.Config.Alias,
-		Avatar:        "", //TODO add a custom radicle logo
+		Avatar:        RADICLE_IMAGE,
 	}
 }
 

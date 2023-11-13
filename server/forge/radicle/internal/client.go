@@ -144,7 +144,9 @@ func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error)
 	if in != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set("Authorization", "Bearer "+c.token)
+	if len(c.token) > 0 {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
 
 	resp, err := c.Do(req)
 	if err != nil {

@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	//shared_utils "github.com/woodpecker-ci/woodpecker/shared/utils"
 )
 
 const (

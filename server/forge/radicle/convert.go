@@ -2,9 +2,9 @@ package radicle
 
 import (
 	"fmt"
-	"github.com/woodpecker-ci/woodpecker/server/forge/radicle/internal"
-	forge_types "github.com/woodpecker-ci/woodpecker/server/forge/types"
-	"github.com/woodpecker-ci/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/server/forge/radicle/internal"
+	forge_types "go.woodpecker-ci.org/woodpecker/server/forge/types"
+	"go.woodpecker-ci.org/woodpecker/server/model"
 	"strings"
 )
 

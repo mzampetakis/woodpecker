@@ -34,6 +34,7 @@ const (
 	pathProjectCommits    = "%s/projects/%s/commits?%s"
 	pathProjectCommitFile = "%s/projects/%s/blob/%s/%s"
 	pathProjectCommitDir  = "%s/projects/%s/tree/%s/%s"
+	pathProjectPatches    = "%s/projects/%s/patches?%s"
 )
 
 type Client struct {
@@ -110,7 +111,7 @@ func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, 
 
 func (c *Client) GetProjectPatches(projectID string, listOpts ListOpts) ([]*Patch, error) {
 	out := new([]*Patch)
-	uri := fmt.Sprintf(pathProjectCommits, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
+	uri := fmt.Sprintf(pathProjectPatches, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return *out, err

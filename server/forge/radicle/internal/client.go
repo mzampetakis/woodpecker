@@ -20,6 +20,8 @@ const (
 const (
 	FileTypeBlob      = "blob"
 	FileTypeDirectory = "tree"
+
+	AUTHORIZED_SESSION = "authorized"
 )
 
 const (
@@ -95,10 +97,6 @@ func (c *Client) GetProjectCommitFile(projectID, commit, file string) (*ProjectF
 	uri := fmt.Sprintf(pathProjectCommitFile, c.base+apiPath+apiV1Path, projectID, commit, file)
 	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
 	return out, err
 }
 
@@ -166,7 +164,6 @@ func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error)
 	// if a json response is expected, parse and return
 	// the json response.
 	if out != nil {
-
 		return nil, json.NewDecoder(resp.Body).Decode(out)
 	}
 

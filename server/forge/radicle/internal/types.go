@@ -41,6 +41,7 @@ type Commits struct {
 	Commits []CommitObject `json:"commits"`
 	Stats   CommitStats    `json:"stats"`
 }
+
 type CommitStats struct {
 	Commits      uint `json:"commits"`
 	Branches     uint `json:"branches"`

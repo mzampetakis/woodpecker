@@ -73,11 +73,12 @@ func (rad *radicle) NID() string {
 func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
 	fmt.Println("Called Login")
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	fmt.Println(fmt.Sprintf("%+v", rad.url))
 	sessionInfo, err := client.GetSessionInfo()
 	if err != nil {
 		return nil, err
 	}
-	if sessionInfo.Status != "authorized" {
+	if sessionInfo.Status != internal.AUTHORIZED_SESSION {
 		return nil, errors.New("provided secret token is unauthorized")
 	}
 	nodeInfo, err := client.GetNodeInfo()
@@ -148,7 +149,6 @@ func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *m
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
 	projectFile, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	return convertProjectFileToContent(projectFile)

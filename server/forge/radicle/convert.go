@@ -2,9 +2,9 @@ package radicle
 
 import (
 	"fmt"
-	"go.woodpecker-ci.org/woodpecker/server/forge/radicle/internal"
-	forge_types "go.woodpecker-ci.org/woodpecker/server/forge/types"
-	"go.woodpecker-ci.org/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
+	forge_types "go.woodpecker-ci.org/woodpecker/v2/server/forge/types"
+	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 	"strings"
 )
 
@@ -35,7 +35,7 @@ func convertProject(project *internal.Project, user *model.User, rad *radicle) *
 		ForgeRemoteID: model.ForgeRemoteID(projectID),
 		Name:          project.Name,
 		FullName:      fmt.Sprintf("%s/%s", user.Login, project.Name),
-		Link:          fmt.Sprintf("%s/%s", rad.URL(), projectID),
+		ForgeURL:      fmt.Sprintf("%s/%s", rad.URL(), projectID),
 		Clone:         fmt.Sprintf("%s/%s.git", rad.URL(), projectID),
 		CloneSSH:      "",
 		Branch:        project.DefaultBranch,

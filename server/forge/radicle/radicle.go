@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rs/zerolog/log"
-	"go.woodpecker-ci.org/woodpecker/server/forge"
-	"go.woodpecker-ci.org/woodpecker/server/forge/radicle/internal"
-	forge_types "go.woodpecker-ci.org/woodpecker/server/forge/types"
-	"go.woodpecker-ci.org/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
+	forge_types "go.woodpecker-ci.org/woodpecker/v2/server/forge/types"
+	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 	"net/http"
 	"net/url"
 	"strings"
@@ -92,7 +92,7 @@ func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Re
 // login for the given token and secret
 func (rad *radicle) Auth(ctx context.Context, token, secret string) (string, error) {
 	fmt.Println("Called Auth")
-	// Auth is not used by Radicle as no there is no oAuth process
+	// Auth is not used by Radicle as there is no oAuth process
 	//TODO implement me
 	panic("implement me")
 }
@@ -100,7 +100,7 @@ func (rad *radicle) Auth(ctx context.Context, token, secret string) (string, err
 // Teams fetches a list of team memberships from the forge.
 func (rad *radicle) Teams(ctx context.Context, u *model.User) ([]*model.Team, error) {
 	fmt.Println("Called Teams")
-	//Readicle does not support teams, workspaces or organizations.
+	//Radicle does not support teams, workspaces or organizations.
 	return nil, nil
 }
 
@@ -268,7 +268,7 @@ func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Re
 // required data in a standard format.
 func (rad *radicle) Hook(ctx context.Context, r *http.Request) (repo *model.Repo, pipeline *model.Pipeline, err error) {
 	fmt.Println("Called Hook")
-	//TODO implement me
+	//	//TODO implement me
 	panic("implement me")
 }
 

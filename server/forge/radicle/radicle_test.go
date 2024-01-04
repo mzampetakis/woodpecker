@@ -2,8 +2,8 @@ package radicle
 
 import (
 	"context"
-	"go.woodpecker-ci.org/woodpecker/server/forge/radicle/fixtures"
-	"go.woodpecker-ci.org/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/fixtures"
+	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 	"net/http/httptest"
 	"testing"
 
@@ -130,7 +130,7 @@ func Test_radicle(t *testing.T) {
 					g.Assert(repo.ForgeRemoteID).Equal(model.ForgeRemoteID("valid_project_id"))
 					g.Assert(repo.Name).Equal("a-project")
 					g.Assert(repo.FullName).Equal("user_login/a-project")
-					g.Assert(repo.Link).Equal(forge.URL() + "/valid_project_id")
+					g.Assert(repo.ForgeURL).Equal(forge.URL() + "/valid_project_id")
 					g.Assert(repo.Clone).Equal(forge.URL() + "/valid_project_id.git")
 					g.Assert(repo.CloneSSH).Equal("")
 					g.Assert(repo.Branch).Equal("main")
@@ -156,7 +156,7 @@ func Test_radicle(t *testing.T) {
 					g.Assert(repos[0].ForgeRemoteID).Equal(model.ForgeRemoteID("valid_project_id"))
 					g.Assert(repos[0].Name).Equal("a-project")
 					g.Assert(repos[0].FullName).Equal("user_login/a-project")
-					g.Assert(repos[0].Link).Equal(forge.URL() + "/valid_project_id")
+					g.Assert(repos[0].ForgeURL).Equal(forge.URL() + "/valid_project_id")
 					g.Assert(repos[0].Clone).Equal(forge.URL() + "/valid_project_id.git")
 					g.Assert(repos[0].CloneSSH).Equal("")
 					g.Assert(repos[0].Branch).Equal("main")
@@ -168,7 +168,7 @@ func Test_radicle(t *testing.T) {
 					g.Assert(repos[1].ForgeRemoteID).Equal(model.ForgeRemoteID("another_valid_project_id"))
 					g.Assert(repos[1].Name).Equal("b-project")
 					g.Assert(repos[1].FullName).Equal("user_login/b-project")
-					g.Assert(repos[1].Link).Equal(forge.URL() + "/another_valid_project_id")
+					g.Assert(repos[1].ForgeURL).Equal(forge.URL() + "/another_valid_project_id")
 					g.Assert(repos[1].Clone).Equal(forge.URL() + "/another_valid_project_id.git")
 					g.Assert(repos[1].CloneSSH).Equal("")
 					g.Assert(repos[1].Branch).Equal("master")

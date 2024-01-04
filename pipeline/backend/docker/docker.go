@@ -34,8 +34,8 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v2"
 
-	backend "go.woodpecker-ci.org/woodpecker/pipeline/backend/types"
-	"go.woodpecker-ci.org/woodpecker/shared/utils"
+	backend "go.woodpecker-ci.org/woodpecker/v2/pipeline/backend/types"
+	"go.woodpecker-ci.org/woodpecker/v2/shared/utils"
 )
 
 type docker struct {
@@ -52,8 +52,8 @@ const (
 	volumeDriver        = "local"
 )
 
-// New returns a new Docker Engine.
-func New() backend.Engine {
+// New returns a new Docker Backend.
+func New() backend.Backend {
 	return &docker{
 		client: nil,
 	}
@@ -94,8 +94,8 @@ func httpClientOfOpts(dockerCertPath string, verifyTLS bool) *http.Client {
 	}
 }
 
-// Load new client for Docker Engine using environment variables.
-func (e *docker) Load(ctx context.Context) (*backend.EngineInfo, error) {
+// Load new client for Docker Backend using environment variables.
+func (e *docker) Load(ctx context.Context) (*backend.BackendInfo, error) {
 	c, ok := ctx.Value(backend.CliContext).(*cli.Context)
 	if !ok {
 		return nil, backend.ErrNoCliContextFound
@@ -143,7 +143,7 @@ func (e *docker) Load(ctx context.Context) (*backend.EngineInfo, error) {
 		e.volumes = append(e.volumes, strings.Join(parts, ":"))
 	}
 
-	return &backend.EngineInfo{
+	return &backend.BackendInfo{
 		Platform: e.info.OSType + "/" + normalizeArchType(e.info.Architecture),
 	}, nil
 }
@@ -320,10 +320,10 @@ func (e *docker) DestroyWorkflow(_ context.Context, conf *backend.Config, taskUU
 		for _, step := range stage.Steps {
 			containerName := toContainerName(step)
 			if err := e.client.ContainerKill(noContext, containerName, "9"); err != nil && !isErrContainerNotFoundOrNotRunning(err) {
-				log.Error().Err(err).Msgf("could not kill container '%s'", stage.Name)
+				log.Error().Err(err).Msgf("could not kill container '%s'", step.Name)
 			}
 			if err := e.client.ContainerRemove(noContext, containerName, removeOpts); err != nil && !isErrContainerNotFoundOrNotRunning(err) {
-				log.Error().Err(err).Msgf("could not remove container '%s'", stage.Name)
+				log.Error().Err(err).Msgf("could not remove container '%s'", step.Name)
 			}
 		}
 	}
@@ -363,8 +363,9 @@ var (
 func isErrContainerNotFoundOrNotRunning(err error) bool {
 	// Error response from daemon: Cannot kill container: ...: No such container: ...
 	// Error response from daemon: Cannot kill container: ...: Container ... is not running"
+	// Error response from podman daemon: can only kill running containers. ... is in state exited
 	// Error: No such container: ...
-	return err != nil && (strings.Contains(err.Error(), "No such container") || strings.Contains(err.Error(), "is not running"))
+	return err != nil && (strings.Contains(err.Error(), "No such container") || strings.Contains(err.Error(), "is not running") || strings.Contains(err.Error(), "can only kill running containers"))
 }
 
 // normalizeArchType converts the arch type reported by docker info into

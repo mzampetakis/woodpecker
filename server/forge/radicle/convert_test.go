@@ -2,8 +2,8 @@ package radicle
 
 import (
 	"github.com/franela/goblin"
-	"go.woodpecker-ci.org/woodpecker/server/forge/radicle/internal"
-	"go.woodpecker-ci.org/woodpecker/server/model"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
+	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 	"testing"
 )
 
@@ -49,7 +49,7 @@ func Test_convert(t *testing.T) {
 			g.Assert(to.Owner).Equal("user_login")
 			g.Assert(to.Name).Equal("hello_world")
 			g.Assert(to.Branch).Equal("default_branch")
-			g.Assert(to.Link).Equal("http://some.url/the_radicle_id")
+			g.Assert(to.ForgeURL).Equal("http://some.url/the_radicle_id")
 			g.Assert(to.Clone).Equal("http://some.url/the_radicle_id.git")
 			g.Assert(to.CloneSSH).Equal("")
 			g.Assert(to.Perm.Push).IsTrue()

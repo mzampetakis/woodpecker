@@ -38,7 +38,14 @@ func getSession(c *gin.Context) {
 }
 
 func getProjects(c *gin.Context) {
-	c.String(200, projectsPayload)
+	switch c.Query("page") {
+	case "0":
+		c.String(200, projectsPayloadPage0)
+	case "1":
+		c.String(200, projectsPayloadPage1)
+	default:
+		c.String(200, emptyPayload)
+	}
 }
 
 func getProject(c *gin.Context) {
@@ -114,8 +121,9 @@ const sessionUnauthorizedPayload = `
 	"expiresAt": 1234567891
 }
 `
+const emptyPayload = `[]`
 
-const projectsPayload = `
+const projectsPayloadPage0 = `
 [
 	{
 		"name": "a-project",
@@ -125,7 +133,7 @@ const projectsPayload = `
 			"did:key:the_key"
 		],
 		"head": "00bfa9b18be32001481334126c311c4a327dff2e",
-		"id": "rad:valid_project_id"
+		"id": "rad:a_project"
 	},
 	{
 		"name": "b-project",
@@ -135,10 +143,36 @@ const projectsPayload = `
 			"did:key:the_other_key"
 		],
 		"head": "00bfa9b18be32001481334126c311c4a327dff2f",
-		"id": "rad:another_valid_project_id"
+		"id": "rad:b_project"
 	}
 ]
 `
+
+const projectsPayloadPage1 = `
+[
+	{
+		"name": "c-project",
+		"description": "c description",
+		"defaultBranch": "main",
+		"delegates": [
+			"did:key:the_key"
+		],
+		"head": "00bfa9b18be32001481334126c311c4a327dff2e",
+		"id": "rad:c_project"
+	},
+	{
+		"name": "d-project",
+		"description": "d description",
+		"defaultBranch": "master",
+		"delegates": [
+			"did:key:the_other_key"
+		],
+		"head": "00bfa9b18be32001481334126c311c4a327dff2f",
+		"id": "rad:d_project"
+	}
+]
+`
+
 const projectPayload = `
 {
 	"name": "a-project",

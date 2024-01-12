@@ -78,7 +78,7 @@ func Test_convert(t *testing.T) {
 		})
 
 		g.It("Should convert project patch with", func() {
-			patch := &internal.Patch{
+			patch := &hooks.Patch{
 				ID:    "patch_id",
 				Title: "Patch title",
 				State: internal.PatchState{

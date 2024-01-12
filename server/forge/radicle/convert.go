@@ -33,14 +33,16 @@ func convertProject(project *internal.Project, user *model.User, rad *radicle) *
 	projectID := strings.TrimPrefix(project.ID, "rad:")
 	return &model.Repo{
 		ForgeRemoteID: model.ForgeRemoteID(projectID),
-		Name:          project.Name,
-		FullName:      fmt.Sprintf("%s/%s", user.Login, project.Name),
+		Name:          fmt.Sprintf("%s (%s)", project.Name, project.ID),
+		FullName:      fmt.Sprintf("%s (%s)", project.Name, project.ID),
 		ForgeURL:      fmt.Sprintf("%s/%s", rad.URL(), projectID),
 		Clone:         fmt.Sprintf("%s/%s.git", rad.URL(), projectID),
 		CloneSSH:      "",
 		Branch:        project.DefaultBranch,
 		Perm:          &perm,
 		Owner:         user.Login,
+		SCMKind:       model.RepoGit,
+		PREnabled:     true,
 	}
 }
 

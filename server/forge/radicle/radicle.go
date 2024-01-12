@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/rs/zerolog/log"
 	"go.woodpecker-ci.org/woodpecker/v2/server/forge"
+	types "go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/hooks"
 	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
 	forge_types "go.woodpecker-ci.org/woodpecker/v2/server/forge/types"
 	"go.woodpecker-ci.org/woodpecker/v2/server/model"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -93,7 +94,6 @@ func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Re
 func (rad *radicle) Auth(ctx context.Context, token, secret string) (string, error) {
 	fmt.Println("Called Auth")
 	// Auth is not used by Radicle as there is no oAuth process
-	//TODO implement me
 	panic("implement me")
 }
 
@@ -128,7 +128,6 @@ func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.Forg
 func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, error) {
 	fmt.Println("Called Repos")
 	fmt.Println(fmt.Sprintf("%+v", *u))
-	log.Info().Msgf(" user" + fmt.Sprintf("%+v", *u))
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
 	projects, err := client.GetProjects()
 	if err != nil {
@@ -184,8 +183,19 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 	fmt.Println("Called Status")
 	fmt.Println(b.Status)
 	fmt.Println(fmt.Sprintf("%+v", b))
+	fmt.Println(fmt.Sprintf("%+v", p))
 	//TODO implement me - left with no error for testing purposes
-	//will have to add a comment to commit (CI COB) when this is ready
+	//will have to add a comment to commit when this is ready
+	//comment := internal.CreatePatchComment{
+	//	Type:     internal.CreatePatchCommentType,
+	//	Body:     "",
+	//	Revision: "",
+	//}
+	//client := internal.NewClient(ctx, rad.url, rad.secretToken)
+	//err := client.AddProjectPatchComment()
+	//if err != nil {
+	//	return err
+	//}
 	return nil
 }
 
@@ -205,6 +215,8 @@ func (rad *radicle) Netrc(u *model.User, r *model.Repo) (*model.Netrc, error) {
 // Activate activates a repository by creating the post-commit hook.
 func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
 	fmt.Println("Called Activate")
+	fmt.Println(fmt.Sprintf("%+v", r))
+	fmt.Println("Link: " + link)
 	//TODO implement me
 	//Added as successful in order to test the rest of the procedure
 	return nil
@@ -214,6 +226,9 @@ func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, 
 // post-commit hooks matching the given link.
 func (rad *radicle) Deactivate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
 	fmt.Println("Called Deactivate")
+	fmt.Println(fmt.Sprintf("%+v", r))
+	fmt.Println("Link: " + link)
+
 	//TODO implement me
 	//Added as successful in order to test the rest of the procedure
 	return nil
@@ -251,6 +266,7 @@ func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo
 func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Repo, p *model.ListOptions) ([]*model.PullRequest, error) {
 	fmt.Println("Called PullRequests")
 	listOpts := internal.ListOpts{Page: p.Page, PerPage: p.PerPage}
+	fmt.Println("Called PullRequests with opts" + fmt.Sprintf("%+v", p))
 	client := internal.NewClient(ctx, rad.url, rad.secretToken)
 	projectPatches, err := client.GetProjectPatches(string(r.ForgeRemoteID), listOpts)
 	if err != nil {
@@ -268,8 +284,20 @@ func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Re
 // required data in a standard format.
 func (rad *radicle) Hook(ctx context.Context, r *http.Request) (repo *model.Repo, pipeline *model.Pipeline, err error) {
 	fmt.Println("Called Hook")
-	//	//TODO implement me
-	panic("implement me")
+	payload, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	hookType := r.Header.Get(types.EventTypeHeaderKey)
+	switch hookType {
+	case types.EventTypePush:
+		return rad.parsePushHook(payload)
+	case types.EventTypePatch:
+		return rad.parsePatchHook(payload)
+	default:
+		return nil, nil, &forge_types.ErrIgnoreEvent{Event: hookType}
+	}
 }
 
 // OrgMembership returns if user is member of organization and if user

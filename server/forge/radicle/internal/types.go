@@ -5,6 +5,8 @@ import (
 	"strconv"
 )
 
+const CreatePatchCommentType = "revision.comment"
+
 type ListOpts struct {
 	Page    int
 	PerPage int
@@ -84,10 +86,17 @@ type PatchState struct {
 	Status string `json:"status"`
 }
 
+type CreatePatchComment struct {
+	Type     string `json:"type"`
+	Body     string `json:"body"`
+	Revision string `json:"revision"`
+}
+
 func (o *ListOpts) Encode() string {
 	params := url.Values{}
-	if o.Page != 0 {
-		params.Set("page", strconv.Itoa(o.Page))
+	if o.Page > 0 {
+		page := o.Page - 1
+		params.Set("page", strconv.Itoa(page))
 	}
 	if o.PerPage != 0 {
 		params.Set("perPage", strconv.Itoa(o.PerPage))

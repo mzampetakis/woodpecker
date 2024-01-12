@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 )
 
 const (
@@ -25,16 +26,17 @@ const (
 )
 
 const (
-	apiPath               = "/api"
-	apiV1Path             = "/v1"
-	pathNode              = "%s/node"
-	pathSession           = "%s/sessions/%s"
-	pathProject           = "%s/projects/%s"
-	pathProjects          = "%s/projects"
-	pathProjectCommits    = "%s/projects/%s/commits?%s"
-	pathProjectCommitFile = "%s/projects/%s/blob/%s/%s"
-	pathProjectCommitDir  = "%s/projects/%s/tree/%s/%s"
-	pathProjectPatches    = "%s/projects/%s/patches?%s"
+	apiPath                 = "/api"
+	apiV1Path               = "/v1"
+	pathNode                = "%s/node"
+	pathSession             = "%s/sessions/%s"
+	pathProject             = "%s/projects/%s"
+	pathProjects            = "%s/projects?page=%s&perPage=%s"
+	pathProjectCommits      = "%s/projects/%s/commits?%s"
+	pathProjectCommitFile   = "%s/projects/%s/blob/%s/%s"
+	pathProjectCommitDir    = "%s/projects/%s/tree/%s/%s"
+	pathProjectPatches      = "%s/projects/%s/patches?%s"
+	pathProjectPatchComment = "%s/projects/%s/patches/%s"
 )
 
 type Client struct {
@@ -78,11 +80,24 @@ func (c *Client) GetProject(projectID string) (*Project, error) {
 }
 
 func (c *Client) GetProjects() ([]*Project, error) {
-	out := new([]*Project)
-	uri := fmt.Sprintf(pathProjects, c.base+apiPath+apiV1Path)
-	fmt.Println(uri)
-	_, err := c.do(uri, get, nil, out)
-	return *out, err
+	var projects []*Project
+	var err error
+	page := 0
+	perPage := 100
+	for {
+		out := new([]*Project)
+		uri := fmt.Sprintf(pathProjects, c.base+apiPath+apiV1Path, strconv.Itoa(page), strconv.Itoa(perPage))
+		_, err = c.do(uri, get, nil, out)
+		if err != nil {
+			return nil, err
+		}
+		if len(*out) == 0 {
+			break
+		}
+		page++
+		projects = append(projects, *out...)
+	}
+	return projects, nil
 }
 
 func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*Commits, error) {
@@ -116,6 +131,15 @@ func (c *Client) GetProjectPatches(projectID string, listOpts ListOpts) ([]*Patc
 	_, err := c.do(uri, get, nil, out)
 	return *out, err
 }
+
+//func (c *Client) AddProjectPatchComment(owner, projectID, revision string, status *PipelineStatus) error {
+//	out := new(Project)
+//
+//	uri := fmt.Sprintf(pathProject, c.base+apiPath+apiV1Path, projectID)
+//	fmt.Println(uri)
+//	_, err := c.do(uri, get, nil, out)
+//	return out, err
+//}
 
 func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error) {
 	uri, err := url.Parse(rawurl)

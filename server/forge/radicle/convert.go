@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// As radicle does not support user avatars, use radicle's logo as user avatar
+// As radicle does not support user avatars, use radicle's logo as avatar
 const RADICLE_IMAGE = "data:image/png;base64," +
 	"iVBORw0KGgoAAAANSUhEUgAAACwAAAAsBAMAAADsqkcyAAAAElBMVEUAAAAzM91VVf/09PT/Vf////+iehdrAAAAAXRSTlMAQObYZgAAAAFiS0dEBfhv6ccAAABTSURBVCjPY2AAAiUlBjhAYlNFGMFBEaSasKAgBFNbWAkFUFMYxDQGAgRNbWEXFwRNLWFBrIA6wgxg8yGRC8JQoSEhDEuUaGmKSsKQZIOSpigXBgAOHTr5ND3M6gAAAABJRU5ErkJggg=="
 
@@ -24,25 +24,30 @@ func convertUser(nodeInfo *internal.NodeInfo) *model.User {
 
 // convertProject is a helper function used to convert a Radicle Project structure
 // to the Woodpecker Repo structure.
-func convertProject(project *internal.Project, user *model.User, rad *radicle) *model.Repo {
-	perm := model.Perm{
-		Pull:  true,
-		Push:  true,
-		Admin: true,
-	}
+func convertProject(project *internal.Repository, user *model.User, rad *radicle) *model.Repo {
 	projectID := strings.TrimPrefix(project.ID, "rad:")
+	defaultBranch := project.DefaultBranch
+	if len(defaultBranch) == 0 {
+		defaultBranch = project.Default_Branch
+	}
 	return &model.Repo{
 		ForgeRemoteID: model.ForgeRemoteID(projectID),
 		Name:          fmt.Sprintf("%s (%s)", project.Name, project.ID),
 		FullName:      fmt.Sprintf("%s (%s)", project.Name, project.ID),
 		ForgeURL:      fmt.Sprintf("%s/%s", rad.URL(), projectID),
 		Clone:         fmt.Sprintf("%s/%s.git", rad.URL(), projectID),
+		Hash:          project.ID,
+		Avatar:        RADICLE_IMAGE,
 		CloneSSH:      "",
-		Branch:        project.DefaultBranch,
-		Perm:          &perm,
-		Owner:         user.Login,
-		SCMKind:       model.RepoGit,
-		PREnabled:     true,
+		Branch:        defaultBranch,
+		Perm: &model.Perm{
+			Pull:  true,
+			Push:  true,
+			Admin: true,
+		},
+		Owner:     rad.Name(),
+		SCMKind:   model.RepoGit,
+		PREnabled: true,
 	}
 }
 
@@ -56,7 +61,7 @@ func convertProjectFileToContent(projectFile *internal.ProjectFile) ([]byte, err
 // to the Woodpecker File Meta structure.
 func convertFileContent(fileContentEntries internal.FileTreeEntries, fileContent []byte) *forge_types.FileMeta {
 	return &forge_types.FileMeta{
-		Name: fileContentEntries.Path, // Might need .Name
+		Name: fileContentEntries.Path,
 		Data: fileContent,
 	}
 }
@@ -65,7 +70,7 @@ func convertFileContent(fileContentEntries internal.FileTreeEntries, fileContent
 // to the Woodpecker Pull Request structure.
 func convertProjectPatch(patch *internal.Patch) *model.PullRequest {
 	return &model.PullRequest{
-		//Index: patch.ID,
+		Index: model.ForgeRemoteID(patch.ID),
 		Title: patch.Title,
 	}
 }

@@ -5,7 +5,12 @@ import (
 	"strconv"
 )
 
-const CreatePatchCommentType = "revision.comment"
+const (
+	CreatePatchCommentType = "revision.comment"
+	EventTypeHeaderKey     = "x-radicle-event-type"
+	EventTypePush          = "push"
+	EventTypePatch         = "patch"
+)
 
 type ListOpts struct {
 	Page    int
@@ -13,8 +18,8 @@ type ListOpts struct {
 }
 
 type NodeInfo struct {
-	ID     string     `json:"id"`
-	Config NodeConfig `json:"config"`
+	ID     string `json:"id"`
+	Config Node   `json:"config"`
 }
 
 type SessionInfo struct {
@@ -26,37 +31,59 @@ type SessionInfo struct {
 	ExpiresAt int64  `json:"expiresAt"`
 }
 
-type NodeConfig struct {
+type Node struct {
+	ID    string `json:"id"`
 	Alias string `json:"alias"`
 }
 
-type Project struct {
-	ID            string   `json:"id"`
-	Name          string   `json:"name"`
-	Description   string   `json:"description"`
-	Delegates     []string `json:"delegates"`
-	DefaultBranch string   `json:"defaultBranch"`
-	Head          string   `json:"head"`
+type Repository struct {
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	Private        bool     `json:"private"`
+	DefaultBranch  string   `json:"defaultBranch"`
+	Default_Branch string   `json:"default_branch"`
+	URL            string   `json:"url"`
+	CloneURL       string   `json:"clone_url"`
+	Delegates      []string `json:"delegates"`
+	Head           string   `json:"head"`
 }
 
-type Commits struct {
-	Commits []CommitObject `json:"commits"`
-	Stats   CommitStats    `json:"stats"`
+type RepositoryCommits struct {
+	Commits []RepositoryCommitObject `json:"commits"`
+	Stats   RepositoryCommitStats    `json:"stats"`
 }
 
-type CommitStats struct {
+type RepositoryCommitStats struct {
 	Commits      uint `json:"commits"`
 	Branches     uint `json:"branches"`
 	Contributors uint `json:"contributors"`
 }
 
-type CommitObject struct {
-	Commit Commit `json:"commit"`
+type RepositoryCommitObject struct {
+	Commit RepositoryCommit `json:"commit"`
+}
+
+type RepositoryCommit struct {
+	ID      string   `json:"id"`
+	Parents []string `json:"parents"`
 }
 
 type Commit struct {
-	ID      string   `json:"id"`
-	Parents []string `json:"parents"`
+	ID        string       `json:"id"`
+	Title     string       `json:"title"`
+	Message   string       `json:"message"`
+	Timestamp int64        `json:"timestamp"`
+	URL       string       `json:"url"`
+	Author    CommitAuthor `json:"author"`
+	Added     []string     `json:"added"`
+	Modified  []string     `json:"modified"`
+	Removed   []string     `json:"removed"`
+}
+
+type CommitAuthor struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type ProjectFile struct {
@@ -76,12 +103,6 @@ type FileTreeEntries struct {
 	Kind string `json:"kind"`
 }
 
-type Patch struct {
-	ID    string     `json:"id"`
-	Title string     `json:"title"`
-	State PatchState `json:"state"`
-}
-
 type PatchState struct {
 	Status string `json:"status"`
 }
@@ -92,9 +113,72 @@ type CreatePatchComment struct {
 	Revision string `json:"revision"`
 }
 
+type ΗοοκPushPayload struct {
+	Author     Node       `json:"author"`
+	Before     string     `json:"before"`
+	After      string     `json:"after"`
+	Commits    []Commit   `json:"commits"`
+	Repository Repository `json:"repository"`
+}
+
+type ΗοοκPatchPayload struct {
+	Action     string     `json:"action"`
+	Patch      Patch      `json:"patch"`
+	Repository Repository `json:"repository"`
+}
+
+type Patch struct {
+	ID        string          `json:"id"`
+	Author    Node            `json:"author"`
+	Title     string          `json:"title"`
+	State     State           `json:"state"`
+	Before    string          `json:"before"`
+	After     string          `json:"after"`
+	Commits   []Commit        `json:"commits"`
+	URL       string          `json:"url"`
+	Target    string          `json:"target"`
+	Labels    []string        `json:"labels"`
+	Assignees []string        `json:"assignees"`
+	Revisions []PatchRevision `json:"revisions"`
+}
+
+type PatchRevision struct {
+	ID          string `json:"id"`
+	Author      Node   `json:"author"`
+	Description string `json:"description"`
+	Base        string `json:"base"`
+	Oid         string `json:"oid"`
+	Timestamp   int64  `json:"timestamp"`
+}
+
+type Draft struct {
+	Status string `json:"status"`
+}
+
+type State struct {
+	Status    string      `json:"status"`
+	Conflicts []Conflicts `json:"conflicts"`
+}
+
+type Archived struct {
+	Status string `json:"status"`
+}
+
+type Merged struct {
+	Status   string `json:"status"`
+	Revision string `json:"revision"`
+	Commit   string `json:"commit"`
+}
+
+type Conflicts struct {
+	RevisionID string `json:"revision_id"`
+	Oid        string `json:"oid"`
+}
+
 func (o *ListOpts) Encode() string {
 	params := url.Values{}
 	if o.Page > 0 {
+		// Radicle's pagination starts from 0 but woodpecker's from 1
 		page := o.Page - 1
 		params.Set("page", strconv.Itoa(page))
 	}

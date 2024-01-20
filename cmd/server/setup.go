@@ -239,9 +239,8 @@ func setupGitHub(c *cli.Context) (forge.Forge, error) {
 // setupRadicle helper function to setup the Radicle forge from the CLI arguments.
 func setupRadicle(c *cli.Context) (forge.Forge, error) {
 	opts := radicle.Opts{
-		URL:         c.String("radicle-node"),
-		NodeID:      c.String("radicle-nid"),
-		SecretToken: c.String("radicle-secret-token"),
+		URL:          c.String("radicle-node"),
+		SessionToken: c.String("radicle-session-token"),
 	}
 	if len(opts.URL) == 0 {
 		log.Fatal().Msg("WOODPECKER_RADICLE_URL must be set")

@@ -457,10 +457,10 @@ var flags = append([]cli.Flag{
 		Usage:   "radicle node ID",
 	},
 	&cli.StringFlag{
-		EnvVars:  []string{"WOODPECKER_RADICLE_SECRET_TOKEN"},
-		Name:     "radicle-secret-token",
-		Usage:    "radicle node secret token",
-		FilePath: os.Getenv("WOODPECKER_RADICLE_SECRET_TOKEN"),
+		EnvVars:  []string{"WOODPECKER_RADICLE_SESSION_TOKEN"},
+		Name:     "radicle-session-token",
+		Usage:    "radicle node session token",
+		FilePath: os.Getenv("WOODPECKER_RADICLE_SESSION_TOKEN"),
 	},
 	//
 	// development flags

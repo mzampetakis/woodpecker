@@ -25,45 +25,45 @@ func Test_radicle(t *testing.T) {
 		g.Describe("Creating new Forge", func() {
 			g.It("should return an error when missing URL", func() {
 				opts := Opts{
-					URL:         "",
-					NodeID:      "NodeID",
-					SecretToken: "a_secret_token",
+					URL:          "",
+					NodeID:       "NodeID",
+					SessionToken: "a_secret_token",
 				}
 				_, err := New(opts)
 				g.Assert(err).IsNotNil()
 			})
 			g.It("Should return an error when invalid URL", func() {
 				opts := Opts{
-					URL:         "invalid_%url",
-					NodeID:      "NodeID",
-					SecretToken: "a_secret_token",
+					URL:          "invalid_%url",
+					NodeID:       "NodeID",
+					SessionToken: "a_secret_token",
 				}
 				_, err := New(opts)
 				g.Assert(err).IsNotNil()
 			})
 			g.It("Should return an error when missing token", func() {
 				opts := Opts{
-					URL:         "http://some.url",
-					NodeID:      "NodeID",
-					SecretToken: "",
+					URL:          "http://some.url",
+					NodeID:       "NodeID",
+					SessionToken: "",
 				}
 				_, err := New(opts)
 				g.Assert(err).IsNotNil("Expected error")
 			})
 			g.It("Should return an error when missing Node ID", func() {
 				opts := Opts{
-					URL:         "http://some.url",
-					NodeID:      "",
-					SecretToken: "a_secret_token",
+					URL:          "http://some.url",
+					NodeID:       "",
+					SessionToken: "a_secret_token",
 				}
 				_, err := New(opts)
 				g.Assert(err).IsNotNil("Expected error")
 			})
 			g.It("Should return a new Forge with correct data", func() {
 				opts := Opts{
-					URL:         "http://some.url",
-					NodeID:      "NodeID",
-					SecretToken: "a_secret_token",
+					URL:          "http://some.url",
+					NodeID:       "NodeID",
+					SessionToken: "a_secret_token",
 				}
 				forge, err := New(opts)
 				g.Assert(err).IsNil()
@@ -323,19 +323,19 @@ func Test_radicle(t *testing.T) {
 }
 
 var authorizedSessionForgeOpts = Opts{
-	URL:         "http://node.id",
-	NodeID:      "NodeID",
-	SecretToken: "authorized",
+	URL:          "http://node.id",
+	NodeID:       "NodeID",
+	SessionToken: "authorized",
 }
 
 var notFoundSessionForgeOpts = Opts{
-	URL:         "http://node.id",
-	NodeID:      "NodeID",
-	SecretToken: "not_found",
+	URL:          "http://node.id",
+	NodeID:       "NodeID",
+	SessionToken: "not_found",
 }
 
 var unauthorizedSessionForgeOpts = Opts{
-	URL:         "http://node.id",
-	NodeID:      "NodeID",
-	SecretToken: "unauthorized_session",
+	URL:          "http://node.id",
+	NodeID:       "NodeID",
+	SessionToken: "unauthorized_session",
 }

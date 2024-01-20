@@ -11,7 +11,7 @@ func Test_convert(t *testing.T) {
 	g := goblin.Goblin(t)
 	g.Describe("Radicle converter", func() {
 
-		project := &internal.Project{
+		project := &internal.Repository{
 			ID:            "the_radicle_id",
 			Name:          "hello_world",
 			DefaultBranch: "default_branch",
@@ -25,15 +25,15 @@ func Test_convert(t *testing.T) {
 			Admin:         true,
 		}
 		rad := &radicle{
-			url:         "http://some.url",
-			nodeID:      "the_nid",
-			secretToken: "the_token",
+			url:          "http://some.url",
+			nodeID:       "the_nid",
+			sessionToken: "the_token",
 		}
 
 		g.It("Should convert user with", func() {
 			nodeInfo := &internal.NodeInfo{
 				ID: "node_id",
-				Config: internal.NodeConfig{
+				Config: internal.Node{
 					Alias: "my_alias",
 				},
 			}
@@ -78,16 +78,16 @@ func Test_convert(t *testing.T) {
 		})
 
 		g.It("Should convert project patch with", func() {
-			patch := &hooks.Patch{
+			patch := &internal.Patch{
 				ID:    "patch_id",
 				Title: "Patch title",
-				State: internal.PatchState{
+				State: internal.State{
 					Status: "open",
 				},
 			}
 			to := convertProjectPatch(patch)
 			g.Assert(to.Title).Equal("Patch title")
-			//g.Assert(to.Index).Equal("patch_id")
+			g.Assert(to.Index).Equal("patch_id")
 		})
 
 	})

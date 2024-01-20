@@ -2,37 +2,24 @@ package radicle
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	types "go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/hooks"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
 	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 )
 
+// parsePushHook parses the push hook payload
 func (rad *radicle) parsePushHook(payload []byte) (*model.Repo, *model.Pipeline, error) {
-	hook := types.PushPayload{}
+	hook := internal.ΗοοκPushPayload{}
 	if err := json.Unmarshal(payload, &hook); err != nil {
 		return nil, nil, err
 	}
-
-	perm := model.Perm{
-		Pull:  true,
-		Push:  true,
-		Admin: true,
+	repo := convertProject(&hook.Repository, nil, rad)
+	lastCommit := internal.Commit{}
+	if len(hook.Commits) == 0 {
+		return nil, nil, errors.New("no commits found in push")
 	}
-	repo := model.Repo{
-		ForgeRemoteID: model.ForgeRemoteID(hook.Repository.ID),
-		Owner:         "",
-		Name:          fmt.Sprintf("%s (%s)", hook.Repository.Name, hook.Repository.ID),
-		FullName:      fmt.Sprintf("%s (%s)", hook.Repository.Name, hook.Repository.ID),
-		Avatar:        "",
-		ForgeURL:      hook.Repository.URL,
-		Clone:         hook.Repository.CloneURL,
-		CloneSSH:      "",
-		Branch:        hook.Repository.DefaultBranch,
-		Hash:          hook.Repository.ID,
-		Perm:          &perm,
-	}
-
-	lastCommit := hook.Commits[len(hook.Commits)-1]
+	lastCommit = hook.Commits[len(hook.Commits)-1]
 	changedFiles := []string{}
 	for _, commit := range hook.Commits {
 		changedFiles = append(changedFiles, commit.Modified...)
@@ -40,67 +27,63 @@ func (rad *radicle) parsePushHook(payload []byte) (*model.Repo, *model.Pipeline,
 		changedFiles = append(changedFiles, commit.Removed...)
 	}
 	pipeline := model.Pipeline{
-		Author:   hook.Author.ID,
-		Event:    model.EventPush,
-		Commit:   hook.After,
-		Branch:   hook.After,
-		Ref:      fmt.Sprintf("refs/heads/%s", hook.After),
-		Refspec:  "",
-		CloneURL: "",
-		Title:    lastCommit.Title,
-		Message:  lastCommit.Message,
-		//Timestamp:           lastCommit.Timestamp,
+		Author:       hook.Author.ID,
+		Event:        model.EventPush,
+		Commit:       hook.After,
+		Branch:       hook.After,
+		Ref:          fmt.Sprintf("refs/heads/%s", hook.After),
+		Refspec:      fmt.Sprintf("refs/heads/%s:refs/heads/%s", hook.After, hook.After),
+		CloneURL:     "",
+		Avatar:       RADICLE_IMAGE,
+		Message:      lastCommit.Title,
+		Timestamp:    lastCommit.Timestamp,
 		Sender:       lastCommit.Author.Name,
 		Email:        lastCommit.Author.Email,
 		ForgeURL:     lastCommit.URL,
 		ChangedFiles: changedFiles,
 	}
 
-	return &repo, &pipeline, nil
+	return repo, &pipeline, nil
 }
 
+// parsePatchHook parses the patch hook payload
 func (rad *radicle) parsePatchHook(payload []byte) (*model.Repo, *model.Pipeline, error) {
-	hook := types.PatchPayload{}
+	hook := internal.ΗοοκPatchPayload{}
 	if err := json.Unmarshal(payload, &hook); err != nil {
 		return nil, nil, err
 	}
-
-	perm := model.Perm{
-		Pull:  true,
-		Push:  true,
-		Admin: true,
+	repo := convertProject(&hook.Repository, nil, rad)
+	if len(hook.Patch.Revisions) == 0 {
+		return nil, nil, errors.New("no revision found in patch")
 	}
-	repo := model.Repo{
-		ForgeRemoteID: model.ForgeRemoteID(hook.Repository.ID),
-		Owner:         "",
-		Name:          fmt.Sprintf("%s (%s)", hook.Repository.Name, hook.Repository.ID),
-		FullName:      fmt.Sprintf("%s (%s)", hook.Repository.Name, hook.Repository.ID),
-		Avatar:        "",
-		ForgeURL:      hook.Repository.URL,
-		Clone:         hook.Repository.CloneURL,
-		CloneSSH:      "",
-		Branch:        hook.Repository.DefaultBranch,
-		Hash:          hook.Repository.ID,
-		Perm:          &perm,
-	}
-
 	lastRevision := hook.Patch.Revisions[len(hook.Patch.Revisions)-1]
+	changedFiles := []string{}
+	for _, commit := range hook.Patch.Commits {
+		changedFiles = append(changedFiles, commit.Modified...)
+		changedFiles = append(changedFiles, commit.Added...)
+		changedFiles = append(changedFiles, commit.Removed...)
+	}
+	vars := map[string]string{}
+	vars["patch_id"] = hook.Patch.ID
+	vars["revision_id"] = lastRevision.ID
 	pipeline := model.Pipeline{
-		Author:   hook.Patch.Author.ID,
-		Event:    model.EventPull,
-		Commit:   hook.Patch.After,
-		Branch:   lastRevision.ID,
-		Ref:      fmt.Sprintf("refs/heads/%s", hook.Patch.After),
-		Refspec:  fmt.Sprintf("%s:%s", hook.Patch.After, hook.Patch.Target),
-		CloneURL: "",
-		Title:    hook.Patch.Title,
-		Message:  "",
-		//Timestamp:           lastRevision.Timestamp,
-		Sender:       hook.Patch.Author.ID,
-		Email:        "",
-		ForgeURL:     hook.Patch.URL,
-		ChangedFiles: nil,
+		Author:              hook.Patch.Author.Alias,
+		Event:               model.EventPull,
+		Commit:              hook.Patch.After,
+		Branch:              hook.Patch.ID,
+		Ref:                 fmt.Sprintf("refs/heads/%s", hook.Patch.After),
+		Refspec:             fmt.Sprintf("refs/heads/%s:refs/heads/%s", hook.Patch.After, hook.Patch.After),
+		CloneURL:            "",
+		Avatar:              RADICLE_IMAGE,
+		PullRequestLabels:   hook.Patch.Labels,
+		Message:             hook.Patch.Title,
+		Timestamp:           lastRevision.Timestamp,
+		Sender:              hook.Patch.Author.ID,
+		Email:               hook.Patch.Author.Alias,
+		ForgeURL:            hook.Patch.URL,
+		ChangedFiles:        nil,
+		AdditionalVariables: vars,
 	}
 
-	return &repo, &pipeline, nil
+	return repo, &pipeline, nil
 }

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go.woodpecker-ci.org/woodpecker/v2/server/model"
 	"io"
 	"net/http"
 	"net/url"
@@ -12,15 +13,12 @@ import (
 )
 
 const (
-	get  = "GET"
-	post = "POST"
-	put  = "PUT"
-	del  = "DELETE"
+	get   = http.MethodGet
+	patch = http.MethodPatch
 )
 
 const (
-	FileTypeBlob      = "blob"
-	FileTypeDirectory = "tree"
+	FileTypeBlob = "blob"
 
 	AUTHORIZED_SESSION = "authorized"
 )
@@ -66,26 +64,24 @@ func (c *Client) GetNodeInfo() (*NodeInfo, error) {
 func (c *Client) GetSessionInfo() (*SessionInfo, error) {
 	out := new(SessionInfo)
 	uri := fmt.Sprintf(pathSession, c.base+apiPath+apiV1Path, c.token)
-	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
 }
 
-func (c *Client) GetProject(projectID string) (*Project, error) {
-	out := new(Project)
+func (c *Client) GetProject(projectID string) (*Repository, error) {
+	out := new(Repository)
 	uri := fmt.Sprintf(pathProject, c.base+apiPath+apiV1Path, projectID)
-	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
 }
 
-func (c *Client) GetProjects() ([]*Project, error) {
-	var projects []*Project
+func (c *Client) GetProjects() ([]*Repository, error) {
+	var projects []*Repository
 	var err error
 	page := 0
 	perPage := 100
 	for {
-		out := new([]*Project)
+		out := new([]*Repository)
 		uri := fmt.Sprintf(pathProjects, c.base+apiPath+apiV1Path, strconv.Itoa(page), strconv.Itoa(perPage))
 		_, err = c.do(uri, get, nil, out)
 		if err != nil {
@@ -100,10 +96,9 @@ func (c *Client) GetProjects() ([]*Project, error) {
 	return projects, nil
 }
 
-func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*Commits, error) {
-	out := new(Commits)
+func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*RepositoryCommits, error) {
+	out := new(RepositoryCommits)
 	uri := fmt.Sprintf(pathProjectCommits, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
-	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
 }
@@ -111,7 +106,6 @@ func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) (*Commit
 func (c *Client) GetProjectCommitFile(projectID, commit, file string) (*ProjectFile, error) {
 	out := new(ProjectFile)
 	uri := fmt.Sprintf(pathProjectCommitFile, c.base+apiPath+apiV1Path, projectID, commit, file)
-	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return out, err
 }
@@ -119,7 +113,6 @@ func (c *Client) GetProjectCommitFile(projectID, commit, file string) (*ProjectF
 func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, error) {
 	out := new(FileTree)
 	uri := fmt.Sprintf(pathProjectCommitDir, c.base+apiPath+apiV1Path, projectID, commit, path)
-	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return *out, err
 }
@@ -127,19 +120,17 @@ func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, 
 func (c *Client) GetProjectPatches(projectID string, listOpts ListOpts) ([]*Patch, error) {
 	out := new([]*Patch)
 	uri := fmt.Sprintf(pathProjectPatches, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
-	fmt.Println(uri)
 	_, err := c.do(uri, get, nil, out)
 	return *out, err
 }
 
-//func (c *Client) AddProjectPatchComment(owner, projectID, revision string, status *PipelineStatus) error {
-//	out := new(Project)
-//
-//	uri := fmt.Sprintf(pathProject, c.base+apiPath+apiV1Path, projectID)
-//	fmt.Println(uri)
-//	_, err := c.do(uri, get, nil, out)
-//	return out, err
-//}
+func (c *Client) AddProjectPatchComment(projectID model.ForgeRemoteID, patchID string,
+	commentPayload CreatePatchComment) error {
+	out := new(Repository)
+	uri := fmt.Sprintf(pathProjectPatchComment, c.base+apiPath+apiV1Path, projectID, patchID)
+	_, err := c.do(uri, patch, commentPayload, out)
+	return err
+}
 
 func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error) {
 	uri, err := url.Parse(rawurl)

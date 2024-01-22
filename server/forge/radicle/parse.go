@@ -81,7 +81,7 @@ func (rad *radicle) parsePatchHook(payload []byte) (*model.Repo, *model.Pipeline
 		Sender:              hook.Patch.Author.ID,
 		Email:               hook.Patch.Author.Alias,
 		ForgeURL:            hook.Patch.URL,
-		ChangedFiles:        nil,
+		ChangedFiles:        changedFiles,
 		AdditionalVariables: vars,
 	}
 

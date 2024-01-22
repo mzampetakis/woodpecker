@@ -68,7 +68,7 @@ func (rad *radicle) NID() string {
 
 // Login authenticates the session and returns the
 // forge user details.
-func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Request) (*model.User, error) {
+func (rad *radicle) Login(ctx context.Context, _ http.ResponseWriter, _ *http.Request) (*model.User, error) {
 	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
 	sessionInfo, err := client.GetSessionInfo()
 	if err != nil {
@@ -88,13 +88,13 @@ func (rad *radicle) Login(ctx context.Context, w http.ResponseWriter, r *http.Re
 
 // Auth authenticates the session and returns the forge user
 // login for the given token and secret
-func (rad *radicle) Auth(ctx context.Context, token, secret string) (string, error) {
+func (rad *radicle) Auth(_ context.Context, _, _ string) (string, error) {
 	// Auth is not used by Radicle as there is no oAuth process
-	panic("implement me")
+	return "", nil
 }
 
 // Teams fetches a list of team memberships from the forge.
-func (rad *radicle) Teams(ctx context.Context, u *model.User) ([]*model.Team, error) {
+func (rad *radicle) Teams(_ context.Context, _ *model.User) ([]*model.Team, error) {
 	fmt.Println("Called Teams")
 	//Radicle does not support teams, workspaces or organizations.
 	return nil, nil
@@ -129,7 +129,8 @@ func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, er
 
 // File fetches a file from the forge repository and returns it in string
 // format.
-func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, f string) ([]byte, error) {
+func (rad *radicle) File(ctx context.Context, _ *model.User, r *model.Repo, b *model.Pipeline, f string) ([]byte,
+	error) {
 	fmt.Println(f)
 	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
 	projectFile, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
@@ -163,7 +164,8 @@ func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *mo
 
 // Status sends the commit status to the forge.
 // An example would be the GitHub pull request status.
-func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, p *model.Workflow) error {
+func (rad *radicle) Status(ctx context.Context, _ *model.User, r *model.Repo, b *model.Pipeline,
+	_ *model.Workflow) error {
 	//Do not add comment if pipeline in progress
 	if b.Status == model.StatusPending || b.Status == model.StatusRunning {
 		return nil
@@ -190,7 +192,7 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 
 // Netrc returns a .netrc file that can be used to clone
 // private repositories from a forge.
-func (rad *radicle) Netrc(u *model.User, r *model.Repo) (*model.Netrc, error) {
+func (rad *radicle) Netrc(_ *model.User, _ *model.Repo) (*model.Netrc, error) {
 	fmt.Println("Called Netrc")
 	//Radicle's private repos should be accessible through the node
 	// Return a dummy Netrc model.
@@ -202,7 +204,12 @@ func (rad *radicle) Netrc(u *model.User, r *model.Repo) (*model.Netrc, error) {
 }
 
 // Activate activates a repository by creating the post-commit hook.
-func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
+func (rad *radicle) Activate(ctx context.Context, _ *model.User, r *model.Repo, link string) error {
+	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	_, err := client.GetProject(string(r.ForgeRemoteID))
+	if err != nil {
+		return err
+	}
 	fmt.Println("Activate Repo: " + r.ForgeRemoteID)
 	fmt.Println("Activate Link: " + link)
 	// Should register a webhook to call link URL to the ForgeRemoteID repo.
@@ -213,7 +220,7 @@ func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, 
 
 // Deactivate deactivates a repository by removing all previously created
 // post-commit hooks matching the given link.
-func (rad *radicle) Deactivate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
+func (rad *radicle) Deactivate(_ context.Context, _ *model.User, r *model.Repo, link string) error {
 	fmt.Println("Deactivate Repo: " + r.ForgeRemoteID)
 	fmt.Println("Deactivate Link: " + link)
 	// Should de-register a webhook to call link URL to the ForgeRemoteID repo.
@@ -223,7 +230,7 @@ func (rad *radicle) Deactivate(ctx context.Context, u *model.User, r *model.Repo
 }
 
 // Branches returns the names of all branches for the named repository.
-func (rad *radicle) Branches(ctx context.Context, u *model.User, r *model.Repo, p *model.ListOptions) ([]string, error) {
+func (rad *radicle) Branches(_ context.Context, _ *model.User, r *model.Repo, p *model.ListOptions) ([]string, error) {
 	// Radicle announces only defaultBranch, so no other branch is globally accessible
 	if p.Page > 1 {
 		return []string{}, nil
@@ -249,7 +256,8 @@ func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo
 }
 
 // PullRequests returns all pull requests for the named repository.
-func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Repo, p *model.ListOptions) ([]*model.PullRequest, error) {
+func (rad *radicle) PullRequests(ctx context.Context, _ *model.User, r *model.Repo,
+	p *model.ListOptions) ([]*model.PullRequest, error) {
 	listOpts := internal.ListOpts{Page: p.Page, PerPage: p.PerPage}
 	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
 	projectPatches, err := client.GetProjectPatches(string(r.ForgeRemoteID), listOpts)
@@ -266,7 +274,7 @@ func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Re
 
 // Hook parses the post-commit hook from the Request body and returns the
 // required data in a standard format.
-func (rad *radicle) Hook(ctx context.Context, r *http.Request) (repo *model.Repo, pipeline *model.Pipeline, err error) {
+func (rad *radicle) Hook(_ context.Context, r *http.Request) (repo *model.Repo, pipeline *model.Pipeline, err error) {
 	payload, err := io.ReadAll(r.Body)
 	if err != nil {
 		return nil, nil, err
@@ -300,7 +308,7 @@ func (rad *radicle) OrgMembership(_ context.Context, u *model.User, orgName stri
 }
 
 // Org fetches the organization from the forge by name. If the name is a user an org with type user is returned.
-func (rad *radicle) Org(ctx context.Context, u *model.User, org string) (*model.Org, error) {
+func (rad *radicle) Org(_ context.Context, _ *model.User, _ string) (*model.Org, error) {
 	// Radicle does not currently support Orgs, so return user as individual org.
 	return &model.Org{
 		Name:   rad.Name(),

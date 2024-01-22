@@ -126,9 +126,8 @@ func (c *Client) GetProjectPatches(projectID string, listOpts ListOpts) ([]*Patc
 
 func (c *Client) AddProjectPatchComment(projectID model.ForgeRemoteID, patchID string,
 	commentPayload CreatePatchComment) error {
-	out := new(Repository)
 	uri := fmt.Sprintf(pathProjectPatchComment, c.base+apiPath+apiV1Path, projectID, patchID)
-	_, err := c.do(uri, patch, commentPayload, out)
+	_, err := c.do(uri, patch, commentPayload, nil)
 	return err
 }
 
@@ -169,7 +168,7 @@ func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error)
 
 	// if an error is encountered, parse and return the
 	// error response.
-	if resp.StatusCode > http.StatusPartialContent {
+	if resp.StatusCode >= http.StatusBadRequest {
 		err := Error{}
 		_ = json.NewDecoder(resp.Body).Decode(&err)
 		err.Status = resp.StatusCode

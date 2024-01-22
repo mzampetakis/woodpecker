@@ -45,13 +45,15 @@ func Test_convert(t *testing.T) {
 		g.It("Should convert repository with", func() {
 			to := convertProject(project, user, rad)
 			g.Assert(to.ForgeRemoteID).Equal(model.ForgeRemoteID("the_radicle_id"))
-			g.Assert(to.FullName).Equal("user_login/hello_world")
-			g.Assert(to.Owner).Equal("user_login")
-			g.Assert(to.Name).Equal("hello_world")
-			g.Assert(to.Branch).Equal("default_branch")
+			g.Assert(to.Name).Equal("hello_world (the_radicle_id)")
+			g.Assert(to.FullName).Equal("hello_world (the_radicle_id)")
 			g.Assert(to.ForgeURL).Equal("http://some.url/the_radicle_id")
 			g.Assert(to.Clone).Equal("http://some.url/the_radicle_id.git")
+			g.Assert(to.Hash).Equal("the_radicle_id")
 			g.Assert(to.CloneSSH).Equal("")
+			g.Assert(to.Branch).Equal("default_branch")
+			g.Assert(to.Owner).Equal("radicle")
+			g.Assert(to.PREnabled).IsTrue()
 			g.Assert(to.Perm.Push).IsTrue()
 			g.Assert(to.Perm.Admin).IsTrue()
 			g.Assert(to.Perm.Pull).IsTrue()
@@ -87,7 +89,7 @@ func Test_convert(t *testing.T) {
 			}
 			to := convertProjectPatch(patch)
 			g.Assert(to.Title).Equal("Patch title")
-			g.Assert(to.Index).Equal("patch_id")
+			g.Assert(to.Index).Equal(model.ForgeRemoteID("patch_id"))
 		})
 
 	})

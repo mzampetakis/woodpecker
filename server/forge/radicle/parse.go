@@ -27,7 +27,7 @@ func (rad *radicle) parsePushHook(payload []byte) (*model.Repo, *model.Pipeline,
 		changedFiles = append(changedFiles, commit.Removed...)
 	}
 	pipeline := model.Pipeline{
-		Author:       hook.Author.ID,
+		Author:       hook.Author.Alias,
 		Event:        model.EventPush,
 		Commit:       hook.After,
 		Branch:       hook.After,
@@ -63,6 +63,10 @@ func (rad *radicle) parsePatchHook(payload []byte) (*model.Repo, *model.Pipeline
 		changedFiles = append(changedFiles, commit.Added...)
 		changedFiles = append(changedFiles, commit.Removed...)
 	}
+	defaultBranch := hook.Repository.DefaultBranch
+	if len(defaultBranch) == 0 {
+		defaultBranch = hook.Repository.Default_Branch
+	}
 	vars := map[string]string{}
 	vars["patch_id"] = hook.Patch.ID
 	vars["revision_id"] = lastRevision.ID
@@ -71,8 +75,8 @@ func (rad *radicle) parsePatchHook(payload []byte) (*model.Repo, *model.Pipeline
 		Event:               model.EventPull,
 		Commit:              hook.Patch.After,
 		Branch:              hook.Patch.ID,
-		Ref:                 fmt.Sprintf("refs/heads/%s", hook.Patch.After),
-		Refspec:             fmt.Sprintf("refs/heads/%s:refs/heads/%s", hook.Patch.After, hook.Patch.After),
+		Ref:                 fmt.Sprintf("refs/heads/%s", defaultBranch),
+		Refspec:             fmt.Sprintf("%s:%s", hook.Patch.After, defaultBranch),
 		CloneURL:            "",
 		Avatar:              RADICLE_IMAGE,
 		PullRequestLabels:   hook.Patch.Labels,

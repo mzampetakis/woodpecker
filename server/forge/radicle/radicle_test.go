@@ -554,7 +554,7 @@ func Test_radicle(t *testing.T) {
 					g.Assert(repo.ForgeURL).Equal(forge.URL() + "/z3gqcJUoA1n9HaHKufZs5FCSGazv5")
 					g.Assert(repo.Hash).Equal("rad:z3gqcJUoA1n9HaHKufZs5FCSGazv5")
 					g.Assert(repo.Owner).Equal(forge.Name())
-					g.Assert(pipeline.Author).Equal("did:key:z6MkkfM3tPXNPrPevKr3uSiQtHPuwnNhu2yUVjgd2jXVsVz5")
+					g.Assert(pipeline.Author).Equal("seb")
 					g.Assert(pipeline.Event).Equal(model.EventPush)
 					g.Assert(pipeline.Commit).Equal("ab6b2a2d318bf214d02f5427d541bbbf8140ab55")
 					g.Assert(pipeline.Branch).Equal("ab6b2a2d318bf214d02f5427d541bbbf8140ab55")

@@ -126,6 +126,8 @@ func HandleAuth(c *gin.Context) {
 	}
 	// The user is not authorized yet -> redirect
 	if userFromForge == nil {
+		fmt.Println("REDIRECTING")
+		fmt.Println(c.Request.FormValue("session_id"))
 		http.Redirect(c.Writer, c.Request, redirectURL, http.StatusSeeOther)
 		return
 	}

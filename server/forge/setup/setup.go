@@ -2,6 +2,7 @@ package setup
 
 import (
 	"fmt"
+	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle"
 	"net/url"
 	"strings"
 
@@ -32,6 +33,8 @@ func Forge(forge *model.Forge) (forge.Forge, error) {
 		return setupGitea(forge)
 	case model.ForgeTypeForgejo:
 		return setupForgejo(forge)
+	case model.ForgeTypeRadicle:
+		return setupRadicle(forge)
 	case model.ForgeTypeBitbucketDatacenter:
 		return setupBitbucketDatacenter(forge)
 	default:
@@ -184,6 +187,35 @@ func setupBitbucketDatacenter(forge *model.Forge) (forge.Forge, error) {
 		Str("type", string(forge.Type)).
 		Msg("setting up forge")
 	return bitbucketdatacenter.New(opts)
+}
+
+func setupRadicle(forge *model.Forge) (forge.Forge, error) {
+	server, err := url.Parse(forge.URL)
+	if err != nil {
+		return nil, err
+	}
+	opts := radicle.Opts{
+		URL:    strings.TrimRight(server.String(), "/"),
+		NodeID: forge.Client,
+	}
+	fmt.Println(fmt.Sprintf("%+v", forge.AdditionalOptions))
+	val, ok := forge.AdditionalOptions["radicle-login-url"]
+	if !ok {
+		return nil, fmt.Errorf("WOODPECKER_RADICLE_LOGIN_URL must be set")
+	}
+	loginURL, err := url.Parse(val.(string))
+	if err != nil {
+		return nil, fmt.Errorf("WOODPECKER_RADICLE_LOGIN_URL must be a valid URL")
+	}
+	opts.LoginURL = strings.TrimRight(loginURL.String(), "/")
+	if val, ok := forge.AdditionalOptions["radicle-hook-secret"]; ok {
+		opts.HookSecret = val.(string)
+	}
+	if len(opts.URL) == 0 {
+		return nil, fmt.Errorf("WOODPECKER_RADICLE_URL must be set")
+	}
+	log.Trace().Msgf("Forge (radicle) opts: %#v", opts)
+	return radicle.New(opts)
 }
 
 func setupAddon(forge *model.Forge) (forge.Forge, error) {

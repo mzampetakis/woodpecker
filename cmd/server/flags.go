@@ -333,9 +333,11 @@ var flags = append([]cli.Flag{
 	// generic forge settings
 	//
 	&cli.StringFlag{
-		Name:    "forge-url",
-		Usage:   "url of the forge",
-		Sources: cli.EnvVars("WOODPECKER_FORGE_URL", "WOODPECKER_GITHUB_URL", "WOODPECKER_GITLAB_URL", "WOODPECKER_GITEA_URL", "WOODPECKER_FORGEJO_URL", "WOODPECKER_BITBUCKET_URL", "WOODPECKER_BITBUCKET_DC_URL"),
+		Name:  "forge-url",
+		Usage: "url of the forge",
+		Sources: cli.EnvVars("WOODPECKER_FORGE_URL", "WOODPECKER_GITHUB_URL", "WOODPECKER_GITLAB_URL",
+			"WOODPECKER_GITEA_URL", "WOODPECKER_FORGEJO_URL", "WOODPECKER_BITBUCKET_URL", "WOODPECKER_BITBUCKET_DC_URL",
+			"WOODPECKER_RADICLE_URL"),
 	},
 	&cli.StringFlag{
 		Sources: cli.NewValueSourceChain(
@@ -377,6 +379,7 @@ var flags = append([]cli.Flag{
 			cli.EnvVar("WOODPECKER_GITEA_SECRET"),
 			cli.EnvVar("WOODPECKER_FORGEJO_SECRET"),
 			cli.EnvVar("WOODPECKER_BITBUCKET_SECRET"),
+			cli.EnvVar("WOODPECKER_RADICLE_HOOK_SECRET"),
 			cli.EnvVar("WOODPECKER_BITBUCKET_DC_CLIENT_SECRET")),
 		Name:  "forge-oauth-secret",
 		Usage: "oauth2 client secret",
@@ -488,6 +491,25 @@ var flags = append([]cli.Flag{
 			TrimSpace: true,
 		},
 	},
+	//
+	// Radicle
+	//
+	&cli.BoolFlag{
+		Sources: cli.EnvVars("WOODPECKER_RADICLE"),
+		Name:    "radicle",
+		Usage:   "radicle driver is enabled",
+	},
+	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_RADICLE_LOGIN_URL"),
+		Name:    "radicle-login-url",
+		Usage:   "external login page for radicle",
+	},
+	&cli.StringFlag{
+		Sources: cli.EnvVars("WOODPECKER_RADICLE_HOOK_SECRET"),
+		Name:    "radicle-hook-secret",
+		Usage:   "secret for radicle webhooks",
+	},
+
 	//
 	// development flags
 	//

@@ -23,6 +23,7 @@ const (
 	ForgeTypeForgejo             ForgeType = "forgejo"
 	ForgeTypeBitbucket           ForgeType = "bitbucket"
 	ForgeTypeBitbucketDatacenter ForgeType = "bitbucket-dc"
+	ForgeTypeRadicle             ForgeType = "radicle"
 	ForgeTypeAddon               ForgeType = "addon"
 )
 

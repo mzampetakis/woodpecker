@@ -133,6 +133,9 @@ func (c *Gitea) Login(ctx context.Context, req *forge_types.OAuthRequest) (*mode
 	if err != nil {
 		return nil, redirectURL, err
 	}
+	fmt.Println(token.AccessToken)
+
+	fmt.Println(token.RefreshToken)
 
 	return &model.User{
 		AccessToken:   token.AccessToken,

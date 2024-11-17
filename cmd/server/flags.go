@@ -379,7 +379,6 @@ var flags = append([]cli.Flag{
 			cli.EnvVar("WOODPECKER_GITEA_SECRET"),
 			cli.EnvVar("WOODPECKER_FORGEJO_SECRET"),
 			cli.EnvVar("WOODPECKER_BITBUCKET_SECRET"),
-			cli.EnvVar("WOODPECKER_RADICLE_HOOK_SECRET"),
 			cli.EnvVar("WOODPECKER_BITBUCKET_DC_CLIENT_SECRET")),
 		Name:  "forge-oauth-secret",
 		Usage: "oauth2 client secret",

@@ -130,7 +130,7 @@ func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.Forg
 	if remoteID.IsValid() {
 		name = string(remoteID)
 	}
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	project, err := client.GetProject(name)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, er
 	fmt.Println(fmt.Sprintf("%+v", u))
 	fmt.Println(fmt.Sprintf("%+v", ctx))
 	fmt.Println(fmt.Sprintf("%+v", ctx.(*gin.Context).Request))
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	projects, err := client.GetProjects()
 	if err != nil {
 		return nil, err
@@ -158,11 +158,11 @@ func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, er
 
 // File fetches a file from the forge repository and returns it in string
 // format.
-func (rad *radicle) File(ctx context.Context, _ *model.User, r *model.Repo, b *model.Pipeline, f string) ([]byte,
+func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline, f string) ([]byte,
 	error) {
 	fmt.Println("Called File")
 	fmt.Println(f)
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	projectFile, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
 		return nil, err
@@ -174,7 +174,7 @@ func (rad *radicle) File(ctx context.Context, _ *model.User, r *model.Repo, b *m
 func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline,
 	f string) ([]*forge_types.FileMeta, error) {
 	fmt.Println("Called Dir")
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	fileContents, err := client.GetProjectCommitDir(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *mo
 
 // Status sends the commit status to the forge.
 // An example would be the GitHub pull request status.
-func (rad *radicle) Status(ctx context.Context, _ *model.User, r *model.Repo, b *model.Pipeline,
+func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline,
 	_ *model.Workflow) error {
 	fmt.Println("Called Status")
 	//Do not add comment if pipeline in progress
@@ -222,7 +222,7 @@ func (rad *radicle) Status(ctx context.Context, _ *model.User, r *model.Repo, b 
 			common.GetPipelineStatusURL(r, b, nil)),
 		Revision: revisionID,
 	}
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	err := client.AddProjectPatchComment(r.ForgeRemoteID, patchID, radicleComment)
 	return err
 }
@@ -241,9 +241,9 @@ func (rad *radicle) Netrc(_ *model.User, _ *model.Repo) (*model.Netrc, error) {
 }
 
 // Activate activates a repository by creating the post-commit hook.
-func (rad *radicle) Activate(ctx context.Context, _ *model.User, r *model.Repo, link string) error {
+func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
 	fmt.Println("Called Activate")
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	_, err := client.GetProject(string(r.ForgeRemoteID))
 	if err != nil {
 		return err
@@ -278,13 +278,14 @@ func (rad *radicle) Branches(_ context.Context, _ *model.User, r *model.Repo, p 
 }
 
 // BranchHead returns the sha of the head (latest commit) of the specified branch
-func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo, branch string) (*model.Commit, error) {
+func (rad *radicle) BranchHead(ctx context.Context, u *model.User, r *model.Repo, branch string) (*model.Commit,
+	error) {
 	fmt.Println("Called BranchHead")
 	if r.Branch != branch {
 		return nil, errors.New("branch does not exist")
 	}
 	listOpts := internal.ListOpts{Page: 0, PerPage: 1}
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	branchCommits, err := client.GetProjectCommits(string(r.ForgeRemoteID), listOpts)
 	if err != nil {
 		return nil, err
@@ -300,11 +301,11 @@ func (rad *radicle) BranchHead(ctx context.Context, _ *model.User, r *model.Repo
 }
 
 // PullRequests returns all pull requests for the named repository.
-func (rad *radicle) PullRequests(ctx context.Context, _ *model.User, r *model.Repo,
+func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Repo,
 	p *model.ListOptions) ([]*model.PullRequest, error) {
 	fmt.Println("Called PullRequests")
 	listOpts := internal.ListOpts{Page: p.Page, PerPage: p.PerPage}
-	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
+	client := internal.NewClient(ctx, rad.url, u.Token)
 	projectPatches, err := client.GetProjectPatches(string(r.ForgeRemoteID), listOpts)
 	if err != nil {
 		return nil, err

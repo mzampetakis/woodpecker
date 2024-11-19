@@ -97,7 +97,7 @@ func (c *Client) GetProjects() ([]*Repository, error) {
 }
 
 func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) ([]*RepositoryCommit, error) {
-	out := new([]*RepositoryCommit)
+	out := new(RepositoryCommits)
 	uri := fmt.Sprintf(pathProjectCommits, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
 	_, err := c.do(uri, get, nil, out)
 	return *out, err

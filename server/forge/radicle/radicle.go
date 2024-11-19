@@ -30,7 +30,6 @@ type radicle struct {
 	nodeID       string
 	sessionToken string
 	alias        string
-	CommentID    string
 	loginURL     string
 	hookSecret   string
 }
@@ -42,6 +41,7 @@ func New(opts Opts) (forge.Forge, error) {
 	rad := radicle{
 		url:        opts.URL,
 		hookSecret: opts.HookSecret,
+		loginURL:   opts.LoginURL,
 	}
 	rad.url = strings.TrimSuffix(opts.URL, "/")
 	if len(rad.url) == 0 {
@@ -51,7 +51,14 @@ func New(opts Opts) (forge.Forge, error) {
 	if err != nil {
 		return nil, fmt.Errorf("must provide a valid URL: %s", err)
 	}
-	rad.loginURL = opts.LoginURL
+	rad.loginURL = strings.TrimSuffix(opts.LoginURL, "/")
+	if len(rad.loginURL) == 0 {
+		return nil, fmt.Errorf("must provide a login URL")
+	}
+	_, err = url.Parse(rad.loginURL)
+	if err != nil {
+		return nil, fmt.Errorf("must provide a valid login URL: %s", err)
+	}
 	return &rad, nil
 }
 
@@ -75,7 +82,7 @@ func (rad *radicle) NID() string {
 
 // Login authenticates the session and returns the
 // forge user details.
-func (rad *radicle) Login(ctx context.Context, req *forge_types.OAuthRequest) (*model.User, string, error) {
+func (rad *radicle) Login(ctx context.Context, _ *forge_types.OAuthRequest) (*model.User, string, error) {
 	fmt.Println("Called Login")
 	ginCtx, ok := ctx.(*gin.Context)
 	rad.sessionToken = ""
@@ -141,9 +148,6 @@ func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.Forg
 // Repos fetches a list of repos from the forge.
 func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, error) {
 	fmt.Println("Called Repos")
-	fmt.Println(fmt.Sprintf("%+v", u))
-	fmt.Println(fmt.Sprintf("%+v", ctx))
-	fmt.Println(fmt.Sprintf("%+v", ctx.(*gin.Context).Request))
 	client := internal.NewClient(ctx, rad.url, u.Token)
 	projects, err := client.GetProjects()
 	if err != nil {

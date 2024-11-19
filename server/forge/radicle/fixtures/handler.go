@@ -32,7 +32,7 @@ func getSession(c *gin.Context) {
 	switch c.Param("session_id") {
 	case "not_found":
 		c.String(404, notFound)
-	case "unauthorized_session":
+	case "unauthed_sess_id":
 		c.String(200, sessionUnauthorizedPayload)
 	default:
 		c.String(200, sessionPayload)
@@ -161,7 +161,14 @@ const projectsPayloadPage0 = `
 		"description": "a description",
 		"defaultBranch": "main",
 		"delegates": [
-			"did:key:the_key"
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9wzpT",
+				"alias":"cloudhead"
+			},
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9waSd",
+				"alias":"michalis"
+			}
 		],
 		"head": "00bfa9b18be32001481334126c311c4a327dff2e",
 		"id": "rad:a_project"
@@ -171,7 +178,14 @@ const projectsPayloadPage0 = `
 		"description": "b description",
 		"defaultBranch": "master",
 		"delegates": [
-			"did:key:the_other_key"
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9wzpT",
+				"alias":"cloudhead"
+			},
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9waSd",
+				"alias":"michalis"
+			}
 		],
 		"head": "00bfa9b18be32001481334126c311c4a327dff2f",
 		"id": "rad:b_project"
@@ -186,7 +200,14 @@ const projectsPayloadPage1 = `
 		"description": "c description",
 		"defaultBranch": "main",
 		"delegates": [
-			"did:key:the_key"
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9wzpT",
+				"alias":"cloudhead"
+			},
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9waSd",
+				"alias":"michalis"
+			}
 		],
 		"head": "00bfa9b18be32001481334126c311c4a327dff2e",
 		"id": "rad:c_project"
@@ -196,7 +217,14 @@ const projectsPayloadPage1 = `
 		"description": "d description",
 		"defaultBranch": "master",
 		"delegates": [
-			"did:key:the_other_key"
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9wzpT",
+				"alias":"cloudhead"
+			},
+			{
+				"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qbS9wQweRty",
+				"alias":"kostas"
+			}
 		],
 		"head": "00bfa9b18be32001481334126c311c4a327dff2f",
 		"id": "rad:d_project"
@@ -210,7 +238,14 @@ const projectPayload = `
 	"description": "a description",
 	"defaultBranch": "main",
 	"delegates": [
-		"did:key:the_key"
+		{
+			"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9wzpT",
+			"alias":"cloudhead"
+		},
+		{
+			"id":"did:key:z6MksFqXN3Yhqk8pTJdUGLwATkRfQvwZXPqR2qMEhbS9waSd",
+			"alias":"michalis"
+		}
 	],
 	"head": "00bfa9b18be32001481334126c311c4a327dff2e",
 	"id": "rad:valid_project_id"
@@ -249,23 +284,20 @@ const projectCommitTreePayload = `
 `
 
 const projectCommitsPayload = `
-{
-	"commits": [
-		{
-			"commit": {
-				"id": "00bfa9b18be32001481334126c311c4a327dff2e",
-				"parents": [
-					"5bb95551460527ce7c24640683d4c0d5cd55a52e"
-				]
-			}
-		}
-	],
-	"stats": {
-		"commits": 1,
-		"branches": 2,
-		"contributors": 3
+[
+	{
+		"id": "00bfa9b18be32001481334126c311c4a327dff2e",
+		"parents": [
+			"5bb95551460527ce7c24640683d4c0d5cd55a52e"
+		]
+	},
+	{
+		"id": "00bfa9b18be32001481334126c311c4a327dff2f",
+		"parents": [
+			"5bb95551460527ce7c24640683d4c0d5cd55a52f"
+		]
 	}
-}
+]
 `
 
 const projectPullRequestsPayload = `
@@ -278,8 +310,11 @@ const projectPullRequestsPayload = `
       },
       "title":"Use repository consistently over project",
       "state":{
-         "status":"open"
+         "status":"open",
+				 "conflicts": []
       },
+			"before": "beforeSHA1",
+			"after": "afterSHA1",
       "target":"delegates",
       "labels":[
 
@@ -369,6 +404,8 @@ const projectPullRequestsPayload = `
       "state":{
          "status":"open"
       },
+			"before": "beforeSHA2",
+			"after": "afterSHA2",
       "target":"delegates",
       "labels":[
 

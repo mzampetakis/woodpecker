@@ -31,11 +31,13 @@ func Test_convert(t *testing.T) {
 		}
 
 		g.It("Should convert user with", func() {
-			nodeInfo := &internal.NodeInfo{
-				ID: "node_id",
-				Config: internal.Node{
-					Alias: "my_alias",
-				},
+			nodeInfo := &radicle{
+				url:          "http://some.url",
+				nodeID:       "node_id",
+				sessionToken: "sess_id",
+				alias:        "my_alias",
+				loginURL:     "http://some.login.url",
+				hookSecret:   "supresectret",
 			}
 			to := convertUser(nodeInfo)
 			g.Assert(to.ForgeRemoteID).Equal(model.ForgeRemoteID("node_id"))
@@ -90,6 +92,28 @@ func Test_convert(t *testing.T) {
 			to := convertProjectPatch(patch)
 			g.Assert(to.Title).Equal("Patch title")
 			g.Assert(to.Index).Equal(model.ForgeRemoteID("patch_id"))
+		})
+
+		g.It("Should convert project patch with", func() {
+			hookRepo := &internal.HookRepository{
+				ID:             "repo_id",
+				Name:           "repo_name",
+				Description:    "repo_descirpiotn",
+				Visibility:     internal.RepoVisibility{},
+				DefaultBranch:  "abranch",
+				Default_Branch: "abranch",
+				URL:            "http://some.url",
+				CloneURL:       "http://some.clone.url",
+				Delegates:      []string{"delegate1", "delegate2"},
+				Head:           "head_commit",
+			}
+			to := convertHookProject(hookRepo, nil, rad)
+			g.Assert(to.Clone).Equal("http://some.url/repo_id.git")
+			g.Assert(to.Branch).Equal("abranch")
+			g.Assert(to.Name).Equal("repo_name (repo_id)")
+			g.Assert(to.ForgeRemoteID).Equal(model.ForgeRemoteID("repo_id"))
+			g.Assert(to.ForgeURL).Equal("http://some.url/repo_id")
+			g.Assert(to.FullName).Equal("repo_name (repo_id)")
 		})
 
 	})

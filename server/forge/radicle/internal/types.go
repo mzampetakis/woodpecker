@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/url"
 	"strconv"
 	"time"
@@ -73,7 +75,7 @@ type Delegates struct {
 	Alias string `json:"alias"`
 }
 
-type RepositoryCommits []RepositoryCommit
+type RepositoryCommits []*RepositoryCommit
 
 type RepositoryCommit struct {
 	ID      string   `json:"id"`
@@ -84,7 +86,7 @@ type Commit struct {
 	ID        string       `json:"id"`
 	Title     string       `json:"title"`
 	Message   string       `json:"message"`
-	Timestamp time.Time    `json:"timestamp"`
+	Timestamp UnixTime     `json:"timestamp"`
 	URL       string       `json:"url"`
 	Author    CommitAuthor `json:"author"`
 	Added     []string     `json:"added"`
@@ -154,12 +156,12 @@ type Patch struct {
 }
 
 type PatchRevision struct {
-	ID          string    `json:"id"`
-	Author      Node      `json:"author"`
-	Description string    `json:"description"`
-	Base        string    `json:"base"`
-	Oid         string    `json:"oid"`
-	Timestamp   time.Time `json:"timestamp"`
+	ID          string   `json:"id"`
+	Author      Node     `json:"author"`
+	Description string   `json:"description"`
+	Base        string   `json:"base"`
+	Oid         string   `json:"oid"`
+	Timestamp   UnixTime `json:"timestamp"`
 }
 
 type Draft struct {
@@ -208,4 +210,23 @@ type Error struct {
 
 func (e Error) Error() string {
 	return e.Body.Message
+}
+
+// UnixTime is our magic type
+type UnixTime struct {
+	time.Time
+}
+
+func (u *UnixTime) UnmarshalJSON(b []byte) error {
+	var timestamp int64
+	err := json.Unmarshal(b, &timestamp)
+	if err != nil {
+		return err
+	}
+	u.Time = time.Unix(timestamp, 0)
+	return nil
+}
+
+func (u UnixTime) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d", (u.Time.Unix()))), nil
 }

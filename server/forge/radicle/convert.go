@@ -22,8 +22,7 @@ func convertUser(rad *radicle) *model.User {
 		ForgeRemoteID: model.ForgeRemoteID(rad.nodeID),
 		Login:         rad.alias,
 		Avatar:        RADICLE_IMAGE,
-		Token:         rad.sessionToken,
-		Secret:        rad.sessionToken,
+		AccessToken:   rad.sessionToken,
 	}
 }
 

@@ -31,53 +31,36 @@ func Test_radicle(t *testing.T) {
 		g.Describe("Creating new Forge", func() {
 			g.It("should return an error when missing URL", func() {
 				opts := Opts{
-					URL:      "",
-					NodeID:   "NodeID",
-					LoginURL: "http://some.login.url"}
+					URL:    "",
+					NodeID: "NodeID",
+					Host:   "http://woodpecker.host",
+				}
 				_, err := New(opts)
 				g.Assert(err).IsNotNil()
 			})
 			g.It("Should return an error when invalid URL", func() {
 				opts := Opts{
-					URL:      "invalid_%url",
-					NodeID:   "NodeID",
-					LoginURL: "http://some.login.url",
+					URL:    "invalid_%url",
+					NodeID: "NodeID",
+					Host:   "http://woodpecker.host",
 				}
 				_, err := New(opts)
 				g.Assert(err).IsNotNil()
 			})
-			g.It("Should return an error when missing LoginURL", func() {
-				opts := Opts{
-					URL:      "http://some.url",
-					NodeID:   "NodeID",
-					LoginURL: "",
-				}
-				_, err := New(opts)
-				g.Assert(err).IsNotNil("Expected error")
-			})
-			g.It("Should return an error when invalid LoginURL", func() {
-				opts := Opts{
-					URL:      "http://some.url",
-					NodeID:   "NodeID",
-					LoginURL: "http://some%login.url",
-				}
-				_, err := New(opts)
-				g.Assert(err).IsNotNil("Expected error")
-			})
 			g.It("Should not return an error when missing Node ID", func() {
 				opts := Opts{
-					URL:      "http://some.url",
-					NodeID:   "",
-					LoginURL: "http://some.login.url",
+					URL:    "http://some.url",
+					NodeID: "",
+					Host:   "http://woodpecker.host",
 				}
 				_, err := New(opts)
 				g.Assert(err).IsNil("Not expected error")
 			})
 			g.It("Should return a new Forge with correct data", func() {
 				opts := Opts{
-					URL:      "http://some.url",
-					NodeID:   "NodeID",
-					LoginURL: "http://some.login.url?key1=val1?key2=val2",
+					URL:    "http://some.url",
+					NodeID: "NodeID",
+					Host:   "http://woodpecker.host",
 				}
 				forge, err := New(opts)
 				g.Assert(err).IsNil()
@@ -86,9 +69,9 @@ func Test_radicle(t *testing.T) {
 			})
 			g.It("Should return a new Forge with correct data and trim slashes in URLs", func() {
 				opts := Opts{
-					URL:      "http://some.url/",
-					NodeID:   "NodeID",
-					LoginURL: "http://some.login.url",
+					URL:    "http://some.url/",
+					NodeID: "NodeID",
+					Host:   "http://woodpecker.host",
 				}
 				forge, err := New(opts)
 				g.Assert(err).IsNil()
@@ -108,7 +91,7 @@ func Test_radicle(t *testing.T) {
 					user, loginURL, err := forge.Login(context.Background(), nil)
 					g.Assert(err).IsNil()
 					g.Assert(user).IsNil()
-					g.Assert(loginURL).Equal("http://login.url")
+					g.Assert(loginURL[22:]).Equal("/api/v1/oauth?callback_url=http://woodpecker.host/authorize")
 				})
 			})
 			g.Describe("with unauthorized session ID", func() {
@@ -122,7 +105,7 @@ func Test_radicle(t *testing.T) {
 					c.Request.Form.Add("session_id", "unauthed_sess_id")
 					user, loginURL, err := forge.Login(&c, nil)
 					g.Assert(err).IsNotNil()
-					g.Assert(loginURL).Equal("http://login.url")
+					g.Assert(loginURL[22:]).Equal("/api/v1/oauth?callback_url=http://woodpecker.host/authorize")
 					g.Assert(err.Error()).Equal("provided secret token is unauthorized")
 					g.Assert(user).IsNil()
 				})
@@ -141,7 +124,7 @@ func Test_radicle(t *testing.T) {
 					g.Assert(user).IsNotNil()
 					g.Assert(loginURL).IsNotNil()
 					g.Assert(user.Login).Equal("myalias")
-					g.Assert(user.Token).Equal("authed_sess_id")
+					g.Assert(user.AccessToken).Equal("authed_sess_id")
 				})
 			})
 		})
@@ -378,7 +361,7 @@ func Test_radicle(t *testing.T) {
 						AdditionalVariables: vars,
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					err := forge.Status(context.Background(), &u, repo, pipeline, nil)
 					g.Assert(err).IsNil()
@@ -399,7 +382,7 @@ func Test_radicle(t *testing.T) {
 						AdditionalVariables: vars,
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					err := forge.Status(context.Background(), &u, repo, pipeline, nil)
 					g.Assert(err).IsNotNil()
@@ -415,7 +398,7 @@ func Test_radicle(t *testing.T) {
 						ForgeRemoteID: "not_found",
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					err := forge.Activate(context.Background(), &u, repo, "")
 					g.Assert(err).IsNotNil()
@@ -427,7 +410,7 @@ func Test_radicle(t *testing.T) {
 						ForgeRemoteID: "repo_id",
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					err := forge.Activate(context.Background(), &u, repo, "")
 					g.Assert(err).IsNil()
@@ -443,7 +426,7 @@ func Test_radicle(t *testing.T) {
 						ForgeRemoteID: "some_repo_id",
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					err := forge.Deactivate(context.Background(), &u, repo, "")
 					g.Assert(err).IsNil()
@@ -464,7 +447,7 @@ func Test_radicle(t *testing.T) {
 						PerPage: 10,
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					branches, err := forge.Branches(context.Background(), &u, repo, &listOpts)
 					g.Assert(err).IsNil()
@@ -483,7 +466,7 @@ func Test_radicle(t *testing.T) {
 						PerPage: 10,
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					branches, err := forge.Branches(context.Background(), &u, repo, &listOpts)
 					g.Assert(err).IsNil()
@@ -497,7 +480,7 @@ func Test_radicle(t *testing.T) {
 			user := &model.User{
 				ForgeRemoteID: "remote_user_id",
 				Login:         "user_login",
-				Token:         "some_token",
+				AccessToken:   "some_token",
 			}
 
 			g.Describe("with invalid project ID", func() {
@@ -551,7 +534,7 @@ func Test_radicle(t *testing.T) {
 						PerPage: 10,
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					pullRequests, err := forge.PullRequests(context.Background(), &u, repo, &listOpts)
 					g.Assert(err).IsNotNil()
@@ -570,7 +553,7 @@ func Test_radicle(t *testing.T) {
 						PerPage: 10,
 					}
 					u := model.User{
-						Token: "some_token",
+						AccessToken: "some_token",
 					}
 					pullRequests, err := forge.PullRequests(context.Background(), &u, repo, &listOpts)
 					g.Assert(err).IsNil()
@@ -728,7 +711,7 @@ func Test_radicle(t *testing.T) {
 }
 
 var forgeOpts = Opts{
-	URL:      "http://node.id",
-	NodeID:   "NodeID",
-	LoginURL: "http://login.url",
+	URL:    "http://node.id",
+	NodeID: "NodeID",
+	Host:   "http://woodpecker.host",
 }

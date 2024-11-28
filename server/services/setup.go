@@ -156,7 +156,7 @@ func setupForgeService(c *cli.Command, _store store.Store) error {
 		_forge.AdditionalOptions["git-password"] = c.String("bitbucket-dc-git-password")
 	case c.Bool("radicle"):
 		_forge.Type = model.ForgeTypeRadicle
-		_forge.AdditionalOptions["radicle-login-url"] = c.String("radicle-login-url")
+		_forge.AdditionalOptions["server-host"] = c.String("server-host")
 		_forge.AdditionalOptions["radicle-hook-secret"] = c.String("radicle-hook-secret")
 	default:
 		return errors.New("forge not configured")

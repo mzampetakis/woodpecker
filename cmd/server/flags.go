@@ -499,11 +499,6 @@ var flags = append([]cli.Flag{
 		Usage:   "radicle driver is enabled",
 	},
 	&cli.StringFlag{
-		Sources: cli.EnvVars("WOODPECKER_RADICLE_LOGIN_URL"),
-		Name:    "radicle-login-url",
-		Usage:   "external login page for radicle",
-	},
-	&cli.StringFlag{
 		Sources: cli.EnvVars("WOODPECKER_RADICLE_HOOK_SECRET"),
 		Name:    "radicle-hook-secret",
 		Usage:   "secret for radicle webhooks",

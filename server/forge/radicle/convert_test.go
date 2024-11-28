@@ -20,7 +20,7 @@ func Test_convert(t *testing.T) {
 		user := &model.User{
 			ForgeRemoteID: "remote_user_id",
 			Login:         "user_login",
-			Token:         "user_token",
+			AccessToken:   "user_token",
 			Avatar:        "user_avatar",
 			Admin:         true,
 		}
@@ -36,7 +36,6 @@ func Test_convert(t *testing.T) {
 				nodeID:       "node_id",
 				sessionToken: "sess_id",
 				alias:        "my_alias",
-				loginURL:     "http://some.login.url",
 				hookSecret:   "supresectret",
 			}
 			to := convertUser(nodeInfo)

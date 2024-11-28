@@ -35,6 +35,7 @@ const (
 	pathProjectCommitDir    = "%s/projects/%s/tree/%s/%s"
 	pathProjectPatches      = "%s/projects/%s/patches?%s"
 	pathProjectPatchComment = "%s/projects/%s/patches/%s"
+	PathLogin               = "%s/api/v1/oauth?callback_url=%s/authorize"
 )
 
 type Client struct {

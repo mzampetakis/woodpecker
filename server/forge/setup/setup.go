@@ -198,16 +198,17 @@ func setupRadicle(forge *model.Forge) (forge.Forge, error) {
 		URL:    strings.TrimRight(server.String(), "/"),
 		NodeID: forge.Client,
 	}
-	fmt.Println(fmt.Sprintf("%+v", forge.AdditionalOptions))
-	val, ok := forge.AdditionalOptions["radicle-login-url"]
+
+	val, ok := forge.AdditionalOptions["server-host"]
 	if !ok {
-		return nil, fmt.Errorf("WOODPECKER_RADICLE_LOGIN_URL must be set")
+		return nil, fmt.Errorf("WOODPECKER_HOST must be set")
 	}
-	loginURL, err := url.Parse(val.(string))
+	hostURL, err := url.Parse(val.(string))
 	if err != nil {
-		return nil, fmt.Errorf("WOODPECKER_RADICLE_LOGIN_URL must be a valid URL")
+		return nil, fmt.Errorf("WOODPECKER_HOST must be a valid URL")
 	}
-	opts.LoginURL = strings.TrimRight(loginURL.String(), "/")
+	opts.Host = strings.TrimRight(hostURL.String(), "/")
+
 	if val, ok := forge.AdditionalOptions["radicle-hook-secret"]; ok {
 		opts.HookSecret = val.(string)
 	}

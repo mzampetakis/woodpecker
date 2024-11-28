@@ -20,17 +20,17 @@ import (
 type Opts struct {
 	URL        string // Radicle node url.
 	NodeID     string // Radicle NID
-	LoginURL   string // Radicle secret token.
+	Host       string // Woodpecker hostUrl URL
 	HookSecret string // secret used for signature generation
 }
 
 // radicle implements "Forge" interface
 type radicle struct {
 	url          string
+	hostUrl      string
 	nodeID       string
 	sessionToken string
 	alias        string
-	loginURL     string
 	hookSecret   string
 }
 
@@ -41,7 +41,6 @@ func New(opts Opts) (forge.Forge, error) {
 	rad := radicle{
 		url:        opts.URL,
 		hookSecret: opts.HookSecret,
-		loginURL:   opts.LoginURL,
 	}
 	rad.url = strings.TrimSuffix(opts.URL, "/")
 	if len(rad.url) == 0 {
@@ -51,14 +50,16 @@ func New(opts Opts) (forge.Forge, error) {
 	if err != nil {
 		return nil, fmt.Errorf("must provide a valid URL: %s", err)
 	}
-	rad.loginURL = strings.TrimSuffix(opts.LoginURL, "/")
-	if len(rad.loginURL) == 0 {
-		return nil, fmt.Errorf("must provide a login URL")
+
+	rad.hostUrl = strings.TrimSuffix(opts.Host, "/")
+	if len(rad.url) == 0 {
+		return nil, fmt.Errorf("must provide a hostUrl URL")
 	}
-	_, err = url.Parse(rad.loginURL)
+	_, err = url.Parse(rad.hostUrl)
 	if err != nil {
-		return nil, fmt.Errorf("must provide a valid login URL: %s", err)
+		return nil, fmt.Errorf("must provide a valid hostUrl URL: %s", err)
 	}
+
 	return &rad, nil
 }
 
@@ -84,8 +85,9 @@ func (rad *radicle) NID() string {
 // forge user details.
 func (rad *radicle) Login(ctx context.Context, _ *forge_types.OAuthRequest) (*model.User, string, error) {
 	fmt.Println("Called Login")
-	ginCtx, ok := ctx.(*gin.Context)
+	loginURL := fmt.Sprintf(internal.PathLogin, rad.url, rad.hostUrl)
 	rad.sessionToken = ""
+	ginCtx, ok := ctx.(*gin.Context)
 	if ok {
 		if len(ctx.(*gin.Context).Request.FormValue("session_id")) > 0 {
 			rad.sessionToken = ginCtx.Request.FormValue("session_id")
@@ -93,27 +95,26 @@ func (rad *radicle) Login(ctx context.Context, _ *forge_types.OAuthRequest) (*mo
 	}
 	if len(rad.sessionToken) == 0 {
 		fmt.Println("Session Token is empty")
-		return nil, rad.loginURL, nil
+		return nil, loginURL, nil
 	}
 	client := internal.NewClient(ctx, rad.url, rad.sessionToken)
 	sessionInfo, err := client.GetSessionInfo()
 	if err != nil {
 		rad.sessionToken = ""
-		return nil, rad.loginURL, err
+		return nil, loginURL, err
 	}
 	if sessionInfo.Status != internal.AUTHORIZED_SESSION {
 		rad.sessionToken = ""
-		return nil, rad.loginURL, errors.New("provided secret token is unauthorized")
+		return nil, loginURL, errors.New("provided secret token is unauthorized")
 	}
 	nodeInfo, err := client.GetNodeInfo()
 	if err != nil {
 		rad.sessionToken = ""
-		return nil, rad.loginURL, err
+		return nil, loginURL, err
 	}
-
 	rad.nodeID = nodeInfo.Config.ID
 	rad.alias = sessionInfo.Alias
-	return convertUser(rad), rad.loginURL, nil
+	return convertUser(rad), loginURL, nil
 }
 
 // Auth authenticates the session and returns the forge user
@@ -137,7 +138,7 @@ func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.Forg
 	if remoteID.IsValid() {
 		name = string(remoteID)
 	}
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	project, err := client.GetProject(name)
 	if err != nil {
 		return nil, err
@@ -148,7 +149,7 @@ func (rad *radicle) Repo(ctx context.Context, u *model.User, remoteID model.Forg
 // Repos fetches a list of repos from the forge.
 func (rad *radicle) Repos(ctx context.Context, u *model.User) ([]*model.Repo, error) {
 	fmt.Println("Called Repos")
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	projects, err := client.GetProjects()
 	if err != nil {
 		return nil, err
@@ -166,7 +167,7 @@ func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *m
 	error) {
 	fmt.Println("Called File")
 	fmt.Println(f)
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	projectFile, err := client.GetProjectCommitFile(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
 		return nil, err
@@ -178,7 +179,7 @@ func (rad *radicle) File(ctx context.Context, u *model.User, r *model.Repo, b *m
 func (rad *radicle) Dir(ctx context.Context, u *model.User, r *model.Repo, b *model.Pipeline,
 	f string) ([]*forge_types.FileMeta, error) {
 	fmt.Println("Called Dir")
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	fileContents, err := client.GetProjectCommitDir(string(r.ForgeRemoteID), b.Commit, f)
 	if err != nil {
 		return nil, err
@@ -226,7 +227,7 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 			common.GetPipelineStatusURL(r, b, nil)),
 		Revision: revisionID,
 	}
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	err := client.AddProjectPatchComment(r.ForgeRemoteID, patchID, radicleComment)
 	return err
 }
@@ -247,7 +248,7 @@ func (rad *radicle) Netrc(_ *model.User, _ *model.Repo) (*model.Netrc, error) {
 // Activate activates a repository by creating the post-commit hook.
 func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
 	fmt.Println("Called Activate")
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	_, err := client.GetProject(string(r.ForgeRemoteID))
 	if err != nil {
 		return err
@@ -289,7 +290,7 @@ func (rad *radicle) BranchHead(ctx context.Context, u *model.User, r *model.Repo
 		return nil, errors.New("branch does not exist")
 	}
 	listOpts := internal.ListOpts{Page: 0, PerPage: 1}
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	branchCommits, err := client.GetProjectCommits(string(r.ForgeRemoteID), listOpts)
 	if err != nil {
 		return nil, err
@@ -309,7 +310,7 @@ func (rad *radicle) PullRequests(ctx context.Context, u *model.User, r *model.Re
 	p *model.ListOptions) ([]*model.PullRequest, error) {
 	fmt.Println("Called PullRequests")
 	listOpts := internal.ListOpts{Page: p.Page, PerPage: p.PerPage}
-	client := internal.NewClient(ctx, rad.url, u.Token)
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
 	projectPatches, err := client.GetProjectPatches(string(r.ForgeRemoteID), listOpts)
 	if err != nil {
 		return nil, err

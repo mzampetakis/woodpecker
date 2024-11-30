@@ -126,6 +126,12 @@ type CreatePatchComment struct {
 	Revision string `json:"revision"`
 }
 
+type CreateRepoWebhook struct {
+	URL         string `json:"url"`
+	Secret      string `json:"secret"`
+	ContentType string `json:"content_type"`
+}
+
 type ΗοοκPushPayload struct {
 	Author     Node           `json:"author"`
 	Before     string         `json:"before"`

@@ -404,6 +404,18 @@ func Test_radicle(t *testing.T) {
 					g.Assert(err).IsNotNil()
 				})
 			})
+			g.Describe("for an invalid repo ID", func() {
+				g.It("Should fail", func() {
+					repo := &model.Repo{
+						ForgeRemoteID: "invalid",
+					}
+					u := model.User{
+						AccessToken: "some_token",
+					}
+					err := forge.Activate(context.Background(), &u, repo, "")
+					g.Assert(err).IsNotNil()
+				})
+			})
 			g.Describe("for a valid repo ID", func() {
 				g.It("Should succeed", func() {
 					repo := &model.Repo{
@@ -420,6 +432,18 @@ func Test_radicle(t *testing.T) {
 
 		//Test Deactivate
 		g.Describe("When deactivating a repo", func() {
+			g.Describe("for an invalid repo ID", func() {
+				g.It("Should fail", func() {
+					repo := &model.Repo{
+						ForgeRemoteID: "invalid",
+					}
+					u := model.User{
+						AccessToken: "some_token",
+					}
+					err := forge.Deactivate(context.Background(), &u, repo, "")
+					g.Assert(err).IsNotNil()
+				})
+			})
 			g.Describe("for any repo ID", func() {
 				g.It("Should succeed", func() {
 					repo := &model.Repo{
@@ -706,7 +730,6 @@ func Test_radicle(t *testing.T) {
 				})
 			})
 		})
-
 	})
 }
 

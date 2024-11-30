@@ -85,7 +85,8 @@ func (rad *radicle) NID() string {
 // forge user details.
 func (rad *radicle) Login(ctx context.Context, _ *forge_types.OAuthRequest) (*model.User, string, error) {
 	fmt.Println("Called Login")
-	loginURL := fmt.Sprintf(internal.PathLogin, rad.url, rad.hostUrl)
+
+	loginURL := internal.GetLoginURL(rad.url, rad.hostUrl)
 	rad.sessionToken = ""
 	ginCtx, ok := ctx.(*gin.Context)
 	if ok {
@@ -103,7 +104,7 @@ func (rad *radicle) Login(ctx context.Context, _ *forge_types.OAuthRequest) (*mo
 		rad.sessionToken = ""
 		return nil, loginURL, err
 	}
-	if sessionInfo.Status != internal.AUTHORIZED_SESSION {
+	if sessionInfo.Status != internal.SessionStatusAuthorized {
 		rad.sessionToken = ""
 		return nil, loginURL, errors.New("provided secret token is unauthorized")
 	}
@@ -255,21 +256,21 @@ func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, 
 	}
 	fmt.Println("Activate Repo: " + r.ForgeRemoteID)
 	fmt.Println("Activate Link: " + link)
-	// Should register a webhook to call link URL to the ForgeRemoteID repo.
-	// Currently not supported by radicle.
-	// Added as successful in order to test the rest of the procedure.
-	return nil
+	webhookOpts := internal.CreateRepoWebhook{
+		URL:         link,
+		Secret:      rad.hookSecret,
+		ContentType: internal.AppJsonType,
+	}
+	return client.AddProjectWebhook(r.ForgeRemoteID, webhookOpts)
 }
 
 // Deactivate deactivates a repository by removing all previously created
 // post-commit hooks matching the given link.
-func (rad *radicle) Deactivate(_ context.Context, _ *model.User, r *model.Repo, link string) error {
+func (rad *radicle) Deactivate(ctx context.Context, u *model.User, r *model.Repo, link string) error {
 	fmt.Println("Deactivate Repo: " + r.ForgeRemoteID)
 	fmt.Println("Deactivate Link: " + link)
-	// Should de-register a webhook to call link URL to the ForgeRemoteID repo.
-	// Currently not supported by radicle.
-	// Added as successful in order to test the rest of the procedure.
-	return nil
+	client := internal.NewClient(ctx, rad.url, u.AccessToken)
+	return client.RemoveProjectWebhook(r.ForgeRemoteID, link)
 }
 
 // Branches returns the names of all branches for the named repository.

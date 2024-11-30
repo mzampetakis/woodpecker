@@ -21,6 +21,8 @@ func Handler() http.Handler {
 	e.GET("/api/v1/projects/:project_id/commits", getProjectCommits)
 	e.GET("/api/v1/projects/:project_id/patches", getProjectPatches)
 	e.PATCH("/api/v1/projects/:project_id/patches/:patch_id", addProjectPatchComment)
+	e.POST("/api/v1/projects/:project_id/webhooks", addProjectWebhook)
+	e.DELETE("/api/v1/projects/:project_id/webhooks", removeProjectWebhook)
 	return e
 }
 
@@ -120,6 +122,28 @@ func addProjectPatchComment(c *gin.Context) {
 		default:
 			c.String(400, invalid)
 		}
+	}
+}
+
+func addProjectWebhook(c *gin.Context) {
+	switch c.Param("project_id") {
+	case "invalid":
+		c.String(400, invalid)
+	case "not_found":
+		c.String(404, notFound)
+	default:
+		c.String(200, emptyPayload)
+	}
+}
+
+func removeProjectWebhook(c *gin.Context) {
+	switch c.Param("project_id") {
+	case "invalid":
+		c.String(400, invalid)
+	case "not_found":
+		c.String(404, notFound)
+	default:
+		c.String(200, emptyPayload)
 	}
 }
 

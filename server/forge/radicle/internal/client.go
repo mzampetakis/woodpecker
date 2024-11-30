@@ -13,29 +13,26 @@ import (
 )
 
 const (
-	get   = http.MethodGet
-	patch = http.MethodPatch
+	FileTypeBlob            = "blob"
+	AppJsonType             = "application/json"
+	SessionStatusAuthorized = "authorized"
 )
 
 const (
-	FileTypeBlob = "blob"
-
-	AUTHORIZED_SESSION = "authorized"
-)
-
-const (
-	apiPath                 = "/api"
-	apiV1Path               = "/v1"
-	pathNode                = "%s/node"
-	pathSession             = "%s/sessions/%s"
-	pathProject             = "%s/projects/%s"
-	pathProjects            = "%s/projects?show=all&page=%s&perPage=%s"
-	pathProjectCommits      = "%s/projects/%s/commits?%s"
-	pathProjectCommitFile   = "%s/projects/%s/blob/%s/%s"
-	pathProjectCommitDir    = "%s/projects/%s/tree/%s/%s"
-	pathProjectPatches      = "%s/projects/%s/patches?%s"
-	pathProjectPatchComment = "%s/projects/%s/patches/%s"
-	PathLogin               = "%s/api/v1/oauth?callback_url=%s/authorize"
+	apiPath                       = "/api"
+	apiV1Path                     = "/v1"
+	pathNode                      = "%s/node"
+	pathSession                   = "%s/sessions/%s"
+	pathProject                   = "%s/projects/%s"
+	pathProjects                  = "%s/projects?show=all&page=%s&perPage=%s"
+	pathProjectCommits            = "%s/projects/%s/commits?%s"
+	pathProjectCommitFile         = "%s/projects/%s/blob/%s/%s"
+	pathProjectCommitDir          = "%s/projects/%s/tree/%s/%s"
+	pathProjectPatches            = "%s/projects/%s/patches?%s"
+	pathProjectPatchComment       = "%s/projects/%s/patches/%s"
+	pathProjectWebhooksActivate   = "%s/projects/%s/webhooks"
+	pathProjectWebhooksDeactivate = "%s/projects/%s/webhooks?url=%s"
+	pathLogin                     = "%s/oauth?callback_url=%s/authorize"
 )
 
 type Client struct {
@@ -54,25 +51,29 @@ func NewClient(ctx context.Context, url string, secretToken string) *Client {
 	}
 }
 
+func GetLoginURL(radURL, hostURL string) string {
+	return fmt.Sprintf(pathLogin, radURL+apiPath+apiV1Path, hostURL)
+}
+
 func (c *Client) GetNodeInfo() (*NodeInfo, error) {
 	out := new(NodeInfo)
 	uri := fmt.Sprintf(pathNode, c.base+apiPath+apiV1Path)
 	fmt.Println(uri)
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return out, err
 }
 
 func (c *Client) GetSessionInfo() (*SessionInfo, error) {
 	out := new(SessionInfo)
 	uri := fmt.Sprintf(pathSession, c.base+apiPath+apiV1Path, c.token)
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return out, err
 }
 
 func (c *Client) GetProject(projectID string) (*Repository, error) {
 	out := new(Repository)
 	uri := fmt.Sprintf(pathProject, c.base+apiPath+apiV1Path, projectID)
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return out, err
 }
 
@@ -84,7 +85,7 @@ func (c *Client) GetProjects() ([]*Repository, error) {
 	for {
 		out := new([]*Repository)
 		uri := fmt.Sprintf(pathProjects, c.base+apiPath+apiV1Path, strconv.Itoa(page), strconv.Itoa(perPage))
-		_, err = c.do(uri, get, nil, out)
+		_, err = c.do(uri, http.MethodGet, nil, out)
 		if err != nil {
 			return nil, err
 		}
@@ -100,35 +101,47 @@ func (c *Client) GetProjects() ([]*Repository, error) {
 func (c *Client) GetProjectCommits(projectID string, listOpts ListOpts) ([]*RepositoryCommit, error) {
 	out := new(RepositoryCommits)
 	uri := fmt.Sprintf(pathProjectCommits, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return *out, err
 }
 
 func (c *Client) GetProjectCommitFile(projectID, commit, file string) (*ProjectFile, error) {
 	out := new(ProjectFile)
 	uri := fmt.Sprintf(pathProjectCommitFile, c.base+apiPath+apiV1Path, projectID, commit, file)
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return out, err
 }
 
 func (c *Client) GetProjectCommitDir(projectID, commit, path string) (FileTree, error) {
 	out := new(FileTree)
 	uri := fmt.Sprintf(pathProjectCommitDir, c.base+apiPath+apiV1Path, projectID, commit, path)
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return *out, err
 }
 
 func (c *Client) GetProjectPatches(projectID string, listOpts ListOpts) ([]*Patch, error) {
 	out := new([]*Patch)
 	uri := fmt.Sprintf(pathProjectPatches, c.base+apiPath+apiV1Path, projectID, listOpts.Encode())
-	_, err := c.do(uri, get, nil, out)
+	_, err := c.do(uri, http.MethodGet, nil, out)
 	return *out, err
 }
 
 func (c *Client) AddProjectPatchComment(projectID model.ForgeRemoteID, patchID string,
 	commentPayload CreatePatchComment) error {
 	uri := fmt.Sprintf(pathProjectPatchComment, c.base+apiPath+apiV1Path, projectID, patchID)
-	_, err := c.do(uri, patch, commentPayload, nil)
+	_, err := c.do(uri, http.MethodPatch, commentPayload, nil)
+	return err
+}
+
+func (c *Client) AddProjectWebhook(projectID model.ForgeRemoteID, webhookOpts CreateRepoWebhook) error {
+	uri := fmt.Sprintf(pathProjectWebhooksActivate, c.base+apiPath+apiV1Path, projectID)
+	_, err := c.do(uri, http.MethodPost, webhookOpts, nil)
+	return err
+}
+
+func (c *Client) RemoveProjectWebhook(projectID model.ForgeRemoteID, url string) error {
+	uri := fmt.Sprintf(pathProjectWebhooksDeactivate, c.base+apiPath+apiV1Path, projectID, url)
+	_, err := c.do(uri, http.MethodDelete, nil, nil)
 	return err
 }
 
@@ -148,7 +161,6 @@ func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error)
 			return nil, err
 		}
 	}
-
 	// creates a new http request to radicle httpd.
 	req, err := http.NewRequestWithContext(c.ctx, method, uri.String(), buf)
 	if err != nil {

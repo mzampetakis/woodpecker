@@ -126,7 +126,8 @@ type CreatePatchComment struct {
 	Revision string `json:"revision"`
 }
 
-type CreateRepoWebhook struct {
+type RepoWebhook struct {
+	RepoID      string `json:"repo_id"`
 	URL         string `json:"url"`
 	Secret      string `json:"secret"`
 	ContentType string `json:"content_type"`

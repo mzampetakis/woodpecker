@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -19,20 +20,19 @@ const (
 )
 
 const (
-	apiPath                       = "/api"
-	apiV1Path                     = "/v1"
-	pathNode                      = "%s/node"
-	pathSession                   = "%s/sessions/%s"
-	pathProject                   = "%s/projects/%s"
-	pathProjects                  = "%s/projects?show=all&page=%s&perPage=%s"
-	pathProjectCommits            = "%s/projects/%s/commits?%s"
-	pathProjectCommitFile         = "%s/projects/%s/blob/%s/%s"
-	pathProjectCommitDir          = "%s/projects/%s/tree/%s/%s"
-	pathProjectPatches            = "%s/projects/%s/patches?%s"
-	pathProjectPatchComment       = "%s/projects/%s/patches/%s"
-	pathProjectWebhooksActivate   = "%s/projects/%s/webhooks"
-	pathProjectWebhooksDeactivate = "%s/projects/%s/webhooks?url=%s"
-	pathLogin                     = "%s/oauth?callback_url=%s/authorize"
+	apiPath                 = "/api"
+	apiV1Path               = "/v1"
+	pathNode                = "%s/node"
+	pathSession             = "%s/sessions/%s"
+	pathProject             = "%s/projects/%s"
+	pathProjects            = "%s/projects?show=all&page=%s&perPage=%s"
+	pathProjectCommits      = "%s/projects/%s/commits?%s"
+	pathProjectCommitFile   = "%s/projects/%s/blob/%s/%s"
+	pathProjectCommitDir    = "%s/projects/%s/tree/%s/%s"
+	pathProjectPatches      = "%s/projects/%s/patches?%s"
+	pathProjectPatchComment = "%s/projects/%s/patches/%s"
+	pathProjectWebhooks     = "%s/projects/%s/webhooks"
+	pathLogin               = "%s/oauth?callback_url=%s/authorize"
 )
 
 type Client struct {
@@ -133,16 +133,34 @@ func (c *Client) AddProjectPatchComment(projectID model.ForgeRemoteID, patchID s
 	return err
 }
 
-func (c *Client) AddProjectWebhook(projectID model.ForgeRemoteID, webhookOpts CreateRepoWebhook) error {
-	uri := fmt.Sprintf(pathProjectWebhooksActivate, c.base+apiPath+apiV1Path, projectID)
+func (c *Client) AddProjectWebhook(projectID model.ForgeRemoteID, webhookOpts RepoWebhook) error {
+	uri := fmt.Sprintf(pathProjectWebhooks, c.base+apiPath+apiV1Path, projectID)
 	_, err := c.do(uri, http.MethodPost, webhookOpts, nil)
 	return err
 }
 
-func (c *Client) RemoveProjectWebhook(projectID model.ForgeRemoteID, url string) error {
-	uri := fmt.Sprintf(pathProjectWebhooksDeactivate, c.base+apiPath+apiV1Path, projectID, url)
+func (c *Client) RemoveProjectWebhook(projectID model.ForgeRemoteID, url *string) error {
+	uri := fmt.Sprintf(pathProjectWebhooks, c.base+apiPath+apiV1Path, projectID)
+	if url != nil {
+		uri = uri + "?url=" + *url
+	}
 	_, err := c.do(uri, http.MethodDelete, nil, nil)
 	return err
+}
+
+func (c *Client) GetProjectWebhook(projectID model.ForgeRemoteID, link string) (*string, error) {
+	uri := fmt.Sprintf(pathProjectWebhooks, c.base+apiPath+apiV1Path, projectID)
+	var repoHooks []RepoWebhook
+	_, err := c.do(uri, http.MethodGet, nil, &repoHooks)
+	if err != nil {
+		return nil, err
+	}
+	for _, repoHook := range repoHooks {
+		if strings.HasPrefix(repoHook.URL, link) {
+			return &repoHook.URL, nil
+		}
+	}
+	return nil, nil
 }
 
 func (c *Client) do(rawurl, method string, in, out interface{}) (*string, error) {

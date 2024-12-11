@@ -256,7 +256,8 @@ func (rad *radicle) Activate(ctx context.Context, u *model.User, r *model.Repo, 
 	}
 	fmt.Println("Activate Repo: " + r.ForgeRemoteID)
 	fmt.Println("Activate Link: " + link)
-	webhookOpts := internal.CreateRepoWebhook{
+	webhookOpts := internal.RepoWebhook{
+		RepoID:      string(r.ForgeRemoteID),
 		URL:         link,
 		Secret:      rad.hookSecret,
 		ContentType: internal.AppJsonType,
@@ -270,7 +271,8 @@ func (rad *radicle) Deactivate(ctx context.Context, u *model.User, r *model.Repo
 	fmt.Println("Deactivate Repo: " + r.ForgeRemoteID)
 	fmt.Println("Deactivate Link: " + link)
 	client := internal.NewClient(ctx, rad.url, u.AccessToken)
-	return client.RemoveProjectWebhook(r.ForgeRemoteID, link)
+	hook, _ := client.GetProjectWebhook(r.ForgeRemoteID, link)
+	return client.RemoveProjectWebhook(r.ForgeRemoteID, hook)
 }
 
 // Branches returns the names of all branches for the named repository.

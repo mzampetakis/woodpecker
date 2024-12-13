@@ -86,7 +86,7 @@ type Commit struct {
 	ID        string       `json:"id"`
 	Title     string       `json:"title"`
 	Message   string       `json:"message"`
-	Timestamp UnixTime     `json:"timestamp"`
+	Timestamp time.Time    `json:"timestamp"`
 	URL       string       `json:"url"`
 	Author    CommitAuthor `json:"author"`
 	Added     []string     `json:"added"`
@@ -143,8 +143,32 @@ type ΗοοκPushPayload struct {
 
 type ΗοοκPatchPayload struct {
 	Action     string         `json:"action"`
-	Patch      Patch          `json:"patch"`
+	Patch      PatchHook      `json:"patch"`
 	Repository HookRepository `json:"repository"`
+}
+
+type PatchHook struct {
+	ID        string              `json:"id"`
+	Author    Node                `json:"author"`
+	Title     string              `json:"title"`
+	State     State               `json:"state"`
+	Before    string              `json:"before"`
+	After     string              `json:"after"`
+	Commits   []Commit            `json:"commits"`
+	URL       string              `json:"url"`
+	Target    string              `json:"target"`
+	Labels    []string            `json:"labels"`
+	Assignees []string            `json:"assignees"`
+	Revisions []PatchRevisionHook `json:"revisions"`
+}
+
+type PatchRevisionHook struct {
+	ID          string    `json:"id"`
+	Author      Node      `json:"author"`
+	Description string    `json:"description"`
+	Base        string    `json:"base"`
+	Oid         string    `json:"oid"`
+	Timestamp   time.Time `json:"timestamp"`
 }
 
 type Patch struct {
@@ -219,7 +243,6 @@ func (e Error) Error() string {
 	return e.Body.Message
 }
 
-// UnixTime is our magic type
 type UnixTime struct {
 	time.Time
 }

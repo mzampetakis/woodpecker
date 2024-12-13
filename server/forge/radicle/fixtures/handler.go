@@ -514,7 +514,7 @@ const HookPushPayload = `
 		"id": "ab6b2a2d318bf214d02f5427d541bbbf8140ab55",
 		"title": "Update signed refs",
 		"message": "",
-		"timestamp": 1705652669,
+		"timestamp": "2024-12-12T12:24:30Z",
 		"url": "rad:z3gqcJUoA1n9HaHKufZs5FCSGazv5/commits/ab6b2a2d318bf214d02f5427d541bbbf8140ab55",
 		"author": {
 			"name": "radicle",
@@ -527,7 +527,7 @@ const HookPushPayload = `
 		"id": "1e7fa3584457f5894bfaed3b65918ec9d6668a4e",
 		"title": "Update signed refs",
 		"message": "",
-		"timestamp": 1705652669,
+		"timestamp": "2024-12-12T12:24:30Z",
 		"url": "rad:z3gqcJUoA1n9HaHKufZs5FCSGazv5/commits/1e7fa3584457f5894bfaed3b65918ec9d6668a4e",
 		"author": {
 			"name": "radicle",
@@ -619,7 +619,7 @@ const HookPatchPayload = `
 			"id": "274ac829adec365bb8a84b3673d8abff4a0ec1b6",
 			"title": "Fix pipeline",
 			"message": "",
-			"timestamp": 1705650791,
+			"timestamp": "2024-12-12T12:24:30Z",
 			"url": "rad:z32iyJDyFLqvPFzwHm8YadK4HQ2EY/commits/274ac829adec365bb8a84b3673d8abff4a0ec1b6",
 			"author": {
 				"name": "Michalis Zampetakis",
@@ -642,7 +642,7 @@ const HookPatchPayload = `
 			"description": "",
 			"base": "ef25208520566bfb96fb00b16ea7c8bd98ffeb8e",
 			"oid": "274ac829adec365bb8a84b3673d8abff4a0ec1b6",
-			"timestamp": 1705650821000
+			"timestamp": "2024-12-12T12:24:30Z"
 		}]
 	},
 	"repository": {

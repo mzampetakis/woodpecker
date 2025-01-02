@@ -332,7 +332,7 @@ func Test_radicle(t *testing.T) {
 				})
 			})
 			g.Describe("with running status without the patch ID", func() {
-				g.It("Should fail", func() {
+				g.It("Should not fail", func() {
 					repo := &model.Repo{
 						ForgeRemoteID: "invalid",
 					}
@@ -344,7 +344,7 @@ func Test_radicle(t *testing.T) {
 						AdditionalVariables: vars,
 					}
 					err := forge.Status(context.Background(), nil, repo, pipeline, nil)
-					g.Assert(err).IsNotNil()
+					g.Assert(err).IsNil()
 				})
 			})
 			g.Describe("with failure status on patch", func() {

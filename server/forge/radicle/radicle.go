@@ -210,8 +210,10 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 	}
 	patchID, patchIDExists := b.AdditionalVariables["patch_id"]
 	revisionID, revisionIDExists := b.AdditionalVariables["revision_id"]
+	// It's not a pipeline for a patch
 	if !patchIDExists || !revisionIDExists {
-		return errors.New("branch does not contain all required information for adding patch comment")
+		fmt.Println("Not a patch. Won't add comment")
+		return nil
 	}
 	statusIcon := "⏳"
 	if b.Status == model.StatusFailure || b.Status == model.StatusKilled || b.Status == model.StatusError || b.
@@ -224,8 +226,8 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 	}
 	radicleComment := internal.CreatePatchComment{
 		Type: internal.CreatePatchCommentType,
-		Body: fmt.Sprintf("Pipeline #%v completed with result: %s. %s \n - Details: %s", b.ID, b.Status, statusIcon,
-			common.GetPipelineStatusURL(r, b, nil)),
+		Body: fmt.Sprintf("Woodpecker pipeline #%v current status: %s. %s \n - Details: %s",
+			b.ID, b.Status, statusIcon, common.GetPipelineStatusURL(r, b, nil)),
 		Revision: revisionID,
 	}
 	client := internal.NewClient(ctx, rad.url, u.AccessToken)

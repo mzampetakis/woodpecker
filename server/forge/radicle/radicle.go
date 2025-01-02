@@ -216,18 +216,25 @@ func (rad *radicle) Status(ctx context.Context, u *model.User, r *model.Repo, b 
 		return nil
 	}
 	statusIcon := "⏳"
+	pipelineCompleted := false
 	if b.Status == model.StatusFailure || b.Status == model.StatusKilled || b.Status == model.StatusError || b.
 		Status == model.StatusBlocked || b.Status == model.StatusDeclined {
 		statusIcon = "❌"
+		pipelineCompleted = true
 	} else if b.Status == model.StatusSuccess {
 		statusIcon = "✅"
+		pipelineCompleted = true
 	} else if b.Status == model.StatusSkipped {
 		statusIcon = "↪️"
 	}
+	statusText := "current"
+	if pipelineCompleted {
+		statusText = "completed with"
+	}
 	radicleComment := internal.CreatePatchComment{
 		Type: internal.CreatePatchCommentType,
-		Body: fmt.Sprintf("Woodpecker pipeline #%v current status: %s. %s \n - Details: %s",
-			b.ID, b.Status, statusIcon, common.GetPipelineStatusURL(r, b, nil)),
+		Body: fmt.Sprintf("Woodpecker pipeline #%v %s status: %s. %s \n - Details: %s",
+			b.ID, statusText, b.Status, statusIcon, common.GetPipelineStatusURL(r, b, nil)),
 		Revision: revisionID,
 	}
 	client := internal.NewClient(ctx, rad.url, u.AccessToken)

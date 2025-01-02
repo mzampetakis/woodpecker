@@ -2,7 +2,7 @@ package setup
 
 import (
 	"fmt"
-	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle"
+	"go.woodpecker-ci.org/woodpecker/v3/server/forge/radicle"
 	"net/url"
 	"strings"
 

@@ -2,8 +2,8 @@ package radicle
 
 import (
 	"github.com/franela/goblin"
-	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
-	"go.woodpecker-ci.org/woodpecker/v2/server/model"
+	"go.woodpecker-ci.org/woodpecker/v3/server/forge/radicle/internal"
+	"go.woodpecker-ci.org/woodpecker/v3/server/model"
 	"testing"
 )
 

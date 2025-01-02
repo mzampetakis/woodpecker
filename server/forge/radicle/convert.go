@@ -5,9 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"go.woodpecker-ci.org/woodpecker/v2/server/forge/radicle/internal"
-	forge_types "go.woodpecker-ci.org/woodpecker/v2/server/forge/types"
-	"go.woodpecker-ci.org/woodpecker/v2/server/model"
+	"go.woodpecker-ci.org/woodpecker/v3/server/forge/radicle/internal"
+	forge_types "go.woodpecker-ci.org/woodpecker/v3/server/forge/types"
+	"go.woodpecker-ci.org/woodpecker/v3/server/model"
 	"strings"
 )
 
@@ -50,7 +50,6 @@ func convertProject(project *internal.Repository, user *model.User, rad *radicle
 			Admin: true,
 		},
 		Owner:     rad.Name(),
-		SCMKind:   model.RepoGit,
 		PREnabled: true,
 	}
 }
@@ -79,7 +78,6 @@ func convertHookProject(project *internal.HookRepository, user *model.User, rad 
 			Admin: true,
 		},
 		Owner:     rad.Name(),
-		SCMKind:   model.RepoGit,
 		PREnabled: true,
 	}
 }
